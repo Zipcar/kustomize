@@ -17,7 +17,7 @@ limitations under the License.
 package transformers
 
 import (
-	"log"
+	"fmt"
 	"sigs.k8s.io/kustomize/v3/pkg/expansion"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 	"sigs.k8s.io/kustomize/v3/pkg/transformers/config"
@@ -43,18 +43,18 @@ func NewRefVarTransformer(
 	}
 }
 
-// replacePrimitiveType checks if the field is a string. If not it will return
-// the field. In case it is a string, it will expand the field, and perform
-// a deepCopy of the expanded value in case it is not of primitiv type.
-func (rv *RefVarTransformer) replacePrimitiveType(a interface{}) interface{} {
+// replaceStringField checks if the incoming field contains a string.
+// If so, the field is processed to replace variables.
+// If not, the field is returned as is
+func (rv *RefVarTransformer) replaceStringField(a interface{}) interface{} {
 	s, ok := a.(string)
 	if !ok {
 		// This field is not of string type.
-		// It can not contain a $(VAR)
+		// It cannot contain a $(VAR)
 		return a
 	}
 
-	// This field can potientially contain a $(VAR)
+	// This field may contain a $(VAR)
 	expandedValue := expansion.Expand(s, rv.mappingFunc)
 
 	// Let's perform a deep copy if we didn't inline
@@ -62,24 +62,39 @@ func (rv *RefVarTransformer) replacePrimitiveType(a interface{}) interface{} {
 	return deepCopy(expandedValue)
 }
 
-// replaceParentInline allows to inline the complex tree of a variable
-// at the same time it allows to replace and patch individual member of
-// that inlined tree.
-func (rv *RefVarTransformer) replaceParentInline(inMap map[string]interface{}) (interface{}, error) {
+// inlineIntoParentNode allows to inline the complex tree of a variable into
+// its parent node (as opposed to the current node).
+// It is intended to be used as follow:
+// ...
+// construct1:
+//   parent-field1:
+//       parent-inline: $(var.pointing.to.a.shared.tree)
+//       child-field1: value1
+// ...
+// construct2:
+//   parent-field2:
+//       parent-inline: $(var.pointing.to.a.shared.tree)
+//       child-field2: value2
+// ...
+// Rationale: The simple inline of a variable map is quite often not
+// enough to actually reduce copy/paste of yaml structs across documents.
+// A user often needs to reuse an entire yaml tree, referred by the variable
+// $(var.pointing.to.a.shared.tree) as a base across K8s constructs 1 and 2.
+// He can then adjust the inlined content according to the needs of the
+// current construct (child-field1 and child-field2)
+func (rv *RefVarTransformer) inlineIntoParentNode(inMap map[string]interface{}) (interface{}, error) {
 	s, _ := inMap[parentInline].(string)
 
 	inlineValue := expansion.Expand(s, rv.mappingFunc)
 	newMap, ok := inlineValue.(map[string]interface{})
 	if !ok {
-		log.Printf("inlining issue with %s", inlineValue)
-		return inMap, nil
+		return inMap, fmt.Errorf("parent-inline field must be expanded with a map[string]interface{}. Detected %s", inlineValue)
 	}
 
 	newMapCopy := deepCopyMap(newMap)
 	mergedMap, err := deepMergeMap(newMapCopy, inMap)
 	if err != nil {
-		log.Printf("deepMerging issue with %s %v", newMap, err)
-		return inMap, nil
+		return inMap, fmt.Errorf("unable to merge current map %s into parent-inline map %s %v", inMap, newMap, err)
 	}
 
 	delete(mergedMap, parentInline)
@@ -96,7 +111,7 @@ func (rv *RefVarTransformer) replaceVars(in interface{}) (interface{}, error) {
 		var xs []interface{}
 		for _, a := range in.([]interface{}) {
 			// Attempt to expand item by item
-			xs = append(xs, rv.replacePrimitiveType(a))
+			xs = append(xs, rv.replaceStringField(a))
 		}
 		return xs, nil
 	case map[string]interface{}:
@@ -104,22 +119,22 @@ func (rv *RefVarTransformer) replaceVars(in interface{}) (interface{}, error) {
 
 		// Deal with "parent-inline" special expansion
 		if _, ok := inMap[parentInline]; ok {
-			return rv.replaceParentInline(inMap)
+			return rv.inlineIntoParentNode(inMap)
 		}
 
 		// Attempt to expand field by field
 		xs := make(map[string]interface{}, len(inMap))
 		for k, v := range inMap {
-			xs[k] = rv.replacePrimitiveType(v)
+			xs[k] = rv.replaceStringField(v)
 		}
 		return xs, nil
 	case string:
 		// Attempt to expand this simple field
-		return rv.replacePrimitiveType(in), nil
+		return rv.replaceStringField(in), nil
 	case nil:
 		return nil, nil
 	default:
-		// This field not contain a $(VAR) since it is not of string type.
+		// This field cannot contain a $(VAR) since it is not of string type.
 		return in, nil
 	}
 }
