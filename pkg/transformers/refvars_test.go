@@ -328,22 +328,26 @@ func TestVarRef(t *testing.T) {
 			},
 		},
 		{
-			description: "recursive-parent-inlining",
+			description: "recursive-inlining",
 			given: given{
 				varMap: map[string]interface{}{
 					"FOO": map[string]interface{}{
-						"parent-inline": "$(BAR)",
-						"barfield2": "replacementFromFoo",
+						"level2": "$(BAR)",
 					},
 					"BAR": map[string]interface{}{
-						"barfield1": "barvalue1",
-						"barfield2": "barvalue2",
-						"barfield3": "barvalue3",
+						"level3": "$(QUX)",
 					},
+					"QUX": map[string]interface{}{
+						"level4": "$(ZOO)",
+					},
+					"ZOO": "replacementForZoo",
 				},
 				fs: []config.FieldSpec{
 					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data"},
-					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/barfield2"},
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/level1"},
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/level1/level2"},
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/level1/level2/level3"},
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/level1/level2/level3/level4"},
 				},
 				res: resmaptest_test.NewRmBuilder(t, rf).
 					Add(map[string]interface{}{
@@ -353,7 +357,7 @@ func TestVarRef(t *testing.T) {
 							"name": "cm1",
 						},
 						"data": map[string]interface{}{
-							"parent-inline": "$(FOO)",
+							"level1": "$(FOO)",
 						},
 					}).ResMap(),
 			},
@@ -366,9 +370,13 @@ func TestVarRef(t *testing.T) {
 							"name": "cm1",
 						},
 						"data": map[string]interface{}{
-							"barfield1": "barvalue1",
-							"barfield2": "replacementFromFoo",
-							"barfield3": "barvalue3",
+							"level1": map[string]interface{}{
+								"level2": map[string]interface{}{
+									"level3": map[string]interface{}{
+										"level4": "replacementForZoo",
+									},
+								},
+							},
 						}}).ResMap(),
 				unused: []string{""},
 			},
