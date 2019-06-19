@@ -7,30 +7,18 @@ import (
 // TODO(jeb): Investigate the usage of obj->json + jsonPatch
 // deepMerge merges two objects together
 func deepMerge(dstVal interface{}, srcVal interface{}) (interface{}, error) {
-	switch srcValType := srcVal.(type) {
+	switch srcVal.(type) {
 	case nil:
-		// preserving non nil type
+		// preserving non nil dstVal
 		return dstVal, nil
 	case []interface{}:
 		return castAndMergeSlice(dstVal, srcVal)
 	case map[string]interface{}:
 		return castAndMergeMap(dstVal, srcVal)
 	default:
-		switch dstValType := dstVal.(type) {
-		case nil:
-			return srcVal, nil
-		default:
-			if dstValType != srcValType {
-				// return dstVal,
-				//	fmt.Errorf("Conflicting type. Unable to merge key %T %T", srcValType, dstValType)
-				dstVal = srcVal
-			} else {
-				dstVal = srcVal
-			}
-		}
+		// preserving non nil srcVal
+		return srcVal, nil
 	}
-
-	return dstVal, nil
 }
 
 func castAndMergeSlice(dstVal interface{}, srcVal interface{}) (interface{}, error) {
@@ -44,6 +32,7 @@ func castAndMergeSlice(dstVal interface{}, srcVal interface{}) (interface{}, err
 		}
 		return mergedSlice, nil
 	case nil:
+		// preserving non nil srcVal
 		return srcVal, nil
 	default:
 		return dstVal, fmt.Errorf("Conflicting type. Unable to merge %T", dstValType)
@@ -77,7 +66,8 @@ func castAndMergeMap(dstVal interface{}, srcVal interface{}) (interface{}, error
 		}
 		return mergedMap, nil
 	case nil:
-		return dstVal, nil
+		// preserving non nil srcVal
+		return srcVal, nil
 	default:
 		return dstVal,
 			fmt.Errorf("Conflicting type. Unable to merge %T", dstValType)
