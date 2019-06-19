@@ -76,6 +76,140 @@ func TestVarRef(t *testing.T) {
 				unused: []string{"BAR"},
 			},
 		},
+		{
+			description: "inlining",
+			given: given{
+				varMap: map[string]interface{}{
+					"FOO": map[string]interface{}{
+						"foofield1": "foovalue1",
+						"foofield2": "foovalue2",
+					},
+					"BAR": "replacementForBar",
+				},
+				fs: []config.FieldSpec{
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data/item1"},
+				},
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"item1": "$(FOO)",
+							"item2": "bla",
+						},
+					}).ResMap(),
+			},
+			expected: expected{
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"item1": map[string]interface{}{
+								"foofield1": "foovalue1",
+								"foofield2": "foovalue2",
+							},
+							"item2": "bla",
+						}}).ResMap(),
+				unused: []string{"BAR"},
+			},
+		},
+		{
+			description: "parent-inlining",
+			given: given{
+				varMap: map[string]interface{}{
+					"FOO": map[string]interface{}{
+						"foofield1": "foovalue1",
+						"foofield2": "foovalue2",
+						"foofield3": "foovalue3",
+						"foofield4": "foovalue4",
+					},
+					"BAR": "replacementForBar",
+				},
+				fs: []config.FieldSpec{
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data"},
+				},
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"parent-inline": "$(FOO)",
+							"foofield3":     "bla",
+						},
+					}).ResMap(),
+			},
+			expected: expected{
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"foofield1": "foovalue1",
+							"foofield2": "foovalue2",
+							"foofield3": "bla",
+							"foofield4": "foovalue4",
+						}}).ResMap(),
+				unused: []string{"BAR"},
+			},
+		},
+		{
+			description: "parent-inlining-and-variable-replacement",
+			given: given{
+				varMap: map[string]interface{}{
+					"FOO": map[string]interface{}{
+						"foofield1": "foovalue1",
+						"foofield2": "foovalue2",
+						"foofield3": "foovalue3",
+						"foofield4": "foovalue4",
+					},
+					"BAR": "replacementForBar",
+				},
+				fs: []config.FieldSpec{
+					{Gvk: gvk.Gvk{Version: "v1", Kind: "ConfigMap"}, Path: "data"},
+				},
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"parent-inline": "$(FOO)",
+							"foofield3":     "$(BAR)",
+						},
+					}).ResMap(),
+			},
+			expected: expected{
+				res: resmaptest_test.NewRmBuilder(t, rf).
+					Add(map[string]interface{}{
+						"apiVersion": "v1",
+						"kind":       "ConfigMap",
+						"metadata": map[string]interface{}{
+							"name": "cm1",
+						},
+						"data": map[string]interface{}{
+							"foofield1": "foovalue1",
+							"foofield2": "foovalue2",
+							"foofield3": "replacementForBar",
+							"foofield4": "foovalue4",
+						}}).ResMap(),
+				unused: []string{""},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
