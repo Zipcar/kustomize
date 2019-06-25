@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: probe
+  namespace: patch
+spec:
+  template:
+    spec:
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080

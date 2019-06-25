@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bar
+  namespace: bar
+spec:
+  rules:
+  - host: bar-branch.dev.domain.com
+    http:
+      paths:
+      - backend:
+          serviceName: bar
+          servicePort: http

@@ -1,0 +1,16 @@
+resources:
+  - configmap.yaml
+  - ingress.yaml
+  - service.yaml
+
+configurations:
+- kustomizeconfig.yaml
+
+vars:
+  - name: CNAME
+    objref:
+      apiVersion: extensions/v1beta1
+      kind: Ingress
+      name: my-ingress
+    fieldref:
+      fieldpath: spec.rules[0].host

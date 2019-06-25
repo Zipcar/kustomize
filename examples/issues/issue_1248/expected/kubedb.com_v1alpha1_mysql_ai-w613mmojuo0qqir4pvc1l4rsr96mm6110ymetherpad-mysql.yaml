@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MySQL
+metadata:
+  labels:
+    k8s.permanent.cloud/appInstallation.id: 45170c85-ec8b-4008-9d57-4524aa16f93f
+  name: ai-w613mmojuo0qqir4pvc1l4rsr96mm6110ymetherpad-mysql
+  namespace: cstmr-zvyjvn35b81rkfkr87fznrpanw5op9x5yo0
+spec:
+  init:
+    scriptSource:
+      configMap:
+        name: etherpad-mysql-init
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: default
+  storageType: Durable
+  terminationPolicy: WipeOut
+  version: 5.7.25

@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Values
-metadata:
-  name: file1
-spec:
-  port: 3306
-  strategy: Recreate
