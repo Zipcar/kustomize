@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  settings.json: |
+    {
+      "skinName":"colibris",
+      "title":"Etherpad on Kubernetes w/ MySQL",
+      "dbType": "${ETHERPAD_DB_TYPE:mysql}",
+      "dbSettings": {
+        "database": "${ETHERPAD_DB_DATABASE}",
+        "host": "${ETHERPAD_DB_HOST}",
+        "password": "${ETHERPAD_DB_PASSWORD}",
+        "user": "${ETHERPAD_DB_USER}"
+      }
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    k8s.permanent.cloud/appInstallation.id: 45170c85-ec8b-4008-9d57-4524aa16f93f
+  name: ai-w613mmojuo0qqir4pvc1l4rsr96mm6110ymetherpad
+  namespace: cstmr-zvyjvn35b81rkfkr87fznrpanw5op9x5yo0

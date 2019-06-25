@@ -1,43 +1,108 @@
-# Issue: Regression in namePrefix configuration in 2.1.0
+# Feature Test for Issue 1228
+
 
 This folder contains files describing how to address [Issue 1228](https://github.com/kubernetes-sigs/kustomize/issues/1228)
 
 ## Setup the workspace
 
-First, define a place to reproduce the issue
+First, define a place to work:
 
 <!-- @makeWorkplace @test -->
-```sh
-REPRODUCE_ISSUE_HOME=$(mktemp -d)
-CONTENT="https://raw.githubusercontent.com\
-/keleustes/kustomize\
-/allinone/examples/issues/issue_1228"
+```bash
+DEMO_HOME=$(mktemp -d)
 ```
 
-## Import the files into the workplace
+## Preparation
 
-<!-- @installResources @test -->
-```sh
-mkdir $REPRODUCE_ISSUE_HOME/actual
-mkdir $REPRODUCE_ISSUE_HOME/expected
-
-curl -s -o "$REPRODUCE_ISSUE_HOME/#1.yaml" \
-  "$CONTENT/{kustomization,config,deployment}.yaml"
-
-curl -s -o "$REPRODUCE_ISSUE_HOME/expected/#1.yaml" \
-  "$CONTENT/expected/{apps_v1_deployment_test-deployment}.yaml"
+<!-- @makeDirectories @test -->
+```bash
+mkdir -p ${DEMO_HOME}
 ```
 
-## Build using kustomize
+### Preparation Step KustomizationFile0
+
+<!-- @createKustomizationFile0 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+resources:
+  - deployment.yaml
+configurations:
+  - config.yaml
+namePrefix: test-
+EOF
+```
+
+
+### Preparation Step Resource0
+
+<!-- @createResource0 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/config.yaml
+namePrefix:
+  - kind: Deployment
+    path: spec/template/spec/containers/name
+EOF
+```
+
+
+### Preparation Step Resource1
+
+<!-- @createResource1 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: main
+        image: myapp
+EOF
+```
+
+## Execution
 
 <!-- @build @test -->
-```sh
-kustomize build $REPRODUCE_ISSUE_HOME -o $REPRODUCE_ISSUE_HOME/actual
+```bash
+mkdir ${DEMO_HOME}/actual
+kustomize build $DEMO_HOME -o ${DEMO_HOME}/actual
 ```
 
-## Verify that the actual output is matching the expected output
+## Verification
 
-<!-- @verify @test -->
-```sh
-#diff -r $REPRODUCE_ISSUE_HOME/actual $REPRODUCE_ISSUE_HOME/expected > $REPRODUCE_ISSUE_HOME/diffs.txt
+<!-- @createExpectedDir @test -->
+```bash
+mkdir ${DEMO_HOME}/expected
 ```
+
+
+### Verification Step Expected0
+
+<!-- @createExpected0 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/expected/apps_v1_deployment_test-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - image: myapp
+        name: test-main
+EOF
+```
+
+
+<!-- @compareActualToExpected @test -->
+```bash
+test 0 == \
+$(diff -r $DEMO_HOME/actual $DEMO_HOME/expected | wc -l); \
+echo $?
+```
+
