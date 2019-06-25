@@ -6,10 +6,12 @@ package accumulator
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 
 	"sigs.k8s.io/kustomize/v3/pkg/resid"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
+	"sigs.k8s.io/kustomize/v3/pkg/resource"
 	"sigs.k8s.io/kustomize/v3/pkg/transformers"
 	"sigs.k8s.io/kustomize/v3/pkg/transformers/config"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
@@ -19,9 +21,11 @@ import (
 // used to customize those resources.  It's a ResMap
 // plus stuff needed to modify the ResMap.
 type ResAccumulator struct {
-	resMap  resmap.ResMap
-	tConfig *config.TransformerConfig
-	varSet  types.VarSet
+	resMap               resmap.ResMap
+	tConfig              *config.TransformerConfig
+	varSet               types.VarSet
+	conflictingResources []*resource.Resource
+	unresolvedVars       types.VarSet
 }
 
 func MakeEmptyAccumulator() *ResAccumulator {
@@ -29,6 +33,8 @@ func MakeEmptyAccumulator() *ResAccumulator {
 	ra.resMap = resmap.New()
 	ra.tConfig = &config.TransformerConfig{}
 	ra.varSet = types.NewVarSet()
+	ra.conflictingResources = []*resource.Resource{}
+	ra.unresolvedVars = types.NewVarSet()
 	return ra
 }
 
@@ -39,7 +45,53 @@ func (ra *ResAccumulator) ResMap() resmap.ResMap {
 
 // Vars returns a copy of underlying vars.
 func (ra *ResAccumulator) Vars() []types.Var {
-	return ra.varSet.AsSlice()
+	completeset := types.NewVarSet()
+	completeset.AbsorbSet(ra.varSet)
+	completeset.AbsorbSet(ra.unresolvedVars)
+	return completeset.AsSlice()
+}
+
+// HandoverConflictingResources removes conflicting resources from the local accumulator
+// and add the conflicting resources list in the other accumulator.
+// Conflicting is defined as have the same CurrentId but different Values.
+func (ra *ResAccumulator) HandoverConflictingResources(other *ResAccumulator) error {
+	conflicting := []*resource.Resource{}
+	for _, rightResource := range other.ResMap().Resources() {
+		rightId := rightResource.CurId()
+		leftResources := ra.resMap.GetMatchingResourcesByCurrentId(rightId.Equals)
+
+		if len(leftResources) == 0 {
+			// no conflict
+			continue
+		}
+
+		// TODO(jeb): Not sure we want to use DeepEqual here since there are some fields
+		// which are artifacts (nameprefix, namesuffix, refvar, refby) added to the resources
+		// by the algorithm here.
+		if len(leftResources) != 1 || !reflect.DeepEqual(leftResources[0], rightResource) {
+			// conflict detected. More than one resource or left and right are different.
+			conflicting = append(conflicting, rightResource)
+			conflicting = append(conflicting, leftResources...)
+		}
+
+		// Remove the resource from that resMap
+		err := ra.resMap.Remove(rightId)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TODO(jeb): Should the conflictingResources be a ResMap ?. We are dropping here
+	// some of the artifacts (nameprefix, namesuffix,...)
+	other.conflictingResources = append(other.conflictingResources, conflicting...)
+	return nil
+}
+
+// ConflictingResources return the list of resources that have been
+// put aside. It will let the PatchTransformer decide how to handle
+// the conflict, assuming the Transformer can.
+func (ra *ResAccumulator) ConflictingResources() []*resource.Resource {
+	return ra.conflictingResources
 }
 
 func (ra *ResAccumulator) AppendAll(
@@ -62,8 +114,57 @@ func (ra *ResAccumulator) GetTransformerConfig() *config.TransformerConfig {
 	return ra.tConfig
 }
 
+// AppendUnresolvedVars accumulates the non conflicting and unresolved variables
+// from one accumulator into another. Returns an error is a conflict is detected.
+func (ra *ResAccumulator) AppendUnresolvedVars(otherSet types.VarSet) error {
+	return ra.unresolvedVars.AbsorbSet(otherSet)
+}
+
+// AppendResolvedVars accumulates the non conflicting and resolved variables
+// from one accumulator into another. Returns an error is a conflict is detected.
+func (ra *ResAccumulator) AppendResolvedVars(otherSet types.VarSet) error {
+	mergeableVars := []types.Var{}
+	for _, v := range otherSet.AsSlice() {
+		conflicting := ra.varSet.Get(v.Name)
+		if conflicting == nil {
+			// no conflict. The var is valid.
+			mergeableVars = append(mergeableVars, v)
+			continue
+		}
+
+		if !v.DeepEqual(*conflicting) {
+			// two vars with the same name are pointing at two
+			// different resources.
+			return fmt.Errorf(
+				"var '%s' already encountered", v.Name)
+		}
+
+		matched := ra.resMap.GetMatchingResourcesByOriginalId(
+			resid.NewResId(v.ObjRef.GVK(), v.ObjRef.Name).GvknEquals)
+		if len(matched) > 1 {
+			// We detected a diamond import of kustomization context
+			// where one variable pointing at one resource in each
+			// context is now poiting at two resources (different CurrId)
+			// because the two contexts have been merged.
+			return fmt.Errorf(
+				"found %d resId matches for var %s "+
+					"(unable to disambiguate)",
+				len(matched), v)
+		}
+	}
+	return ra.varSet.MergeSlice(mergeableVars)
+}
+
 func (ra *ResAccumulator) MergeVars(incoming []types.Var) error {
-	for _, v := range incoming {
+	// Absorb the new slice of vars into the previously
+	// unresolved vars (from the base folders)
+	toresolve := ra.unresolvedVars.Copy()
+	if err := toresolve.AbsorbSlice(incoming); err != nil {
+		return err
+	}
+	ra.unresolvedVars = types.NewVarSet()
+
+	for _, v := range toresolve.AsSlice() {
 		targetId := resid.NewResIdWithNamespace(v.ObjRef.GVK(), v.ObjRef.Name, v.ObjRef.Namespace)
 		idMatcher := targetId.GvknEquals
 		if targetId.Namespace != "" || !targetId.IsNamespaceableKind() {
@@ -78,11 +179,23 @@ func (ra *ResAccumulator) MergeVars(incoming []types.Var) error {
 					"(unable to disambiguate)",
 				len(matched), v)
 		}
-		if len(matched) == 1 {
-			matched[0].AppendRefVarName(v)
+
+		if len(matched) == 0 {
+			// no associated resources yet.
+			if err := ra.unresolvedVars.Absorb(v); err != nil {
+				return err
+			}
+			continue
 		}
+
+		// Found one unique associated resource.
+		if err := ra.varSet.Absorb(v); err != nil {
+			return err
+		}
+		matched[0].AppendRefVarName(v)
 	}
-	return ra.varSet.MergeSlice(incoming)
+
+	return nil
 }
 
 func (ra *ResAccumulator) MergeAccumulator(other *ResAccumulator) (err error) {
@@ -94,7 +207,11 @@ func (ra *ResAccumulator) MergeAccumulator(other *ResAccumulator) (err error) {
 	if err != nil {
 		return err
 	}
-	return ra.varSet.MergeSet(other.varSet)
+	err = ra.AppendUnresolvedVars(other.unresolvedVars)
+	if err != nil {
+		return err
+	}
+	return ra.AppendResolvedVars(other.varSet)
 }
 
 func (ra *ResAccumulator) findVarValueFromResources(v types.Var) (interface{}, error) {
