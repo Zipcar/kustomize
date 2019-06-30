@@ -8,9 +8,10 @@ import (
 	"testing"
 )
 
-func TestEnhancedInlining(t *testing.T) {
-	th := kusttest_test.NewKustTestHarness(t, "/app/whatever")
-	th.WriteK("/app/whatever", `
+type inlineTest struct{}
+
+func (ut *inlineTest) writeKustomization(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinesimple/", `
 resources:
 - cronjob.yaml
 - deployment.yaml
@@ -28,7 +29,10 @@ vars:
   fieldref:
     fieldpath: spec.env
 `)
-	th.WriteF("/app/whatever/kustomizeconfig.yaml", `
+}
+
+func (ut *inlineTest) writeKustomConfig(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinesimple/kustomizeconfig.yaml", `
 varReference:
 - kind: Deployment
   path: spec/template/spec/containers[]/env
@@ -36,7 +40,10 @@ varReference:
 - kind: CronJob
   path: spec/jobTemplate/spec/template/spec/containers[]/env
 `)
-	th.WriteF("/app/whatever/cronjob.yaml", `
+}
+
+func (ut *inlineTest) writeCronJob(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinesimple/cronjob.yaml", `
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
@@ -59,7 +66,10 @@ spec:
             env: $(Values.shared.spec.env)
           restartPolicy: OnFailure
 `)
-	th.WriteF("/app/whatever/deployment.yaml", `
+}
+
+func (ut *inlineTest) writeDnsPatch(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinesimple/deployment.yaml", `
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
@@ -83,7 +93,10 @@ spec:
           name: wordpress
         env: $(Values.shared.spec.env)
 `)
-	th.WriteF("/app/whatever/values.yaml", `
+}
+
+func (ut *inlineTest) writeValues(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinesimple/values.yaml", `
 apiVersion: v1
 kind: Values
 metadata:
@@ -101,6 +114,16 @@ spec:
         name: wordpress-db-auth
         key: password
 `)
+}
+
+func TestSimpleInline(t *testing.T) {
+	ut := &inlineTest{}
+	th := kusttest_test.NewKustTestHarness(t, "/inlinesimple")
+	ut.writeKustomization(th)
+	ut.writeKustomConfig(th)
+	ut.writeCronJob(th)
+	ut.writeDnsPatch(th)
+	ut.writeValues(th)
 	m, err := th.MakeKustTarget().MakeCustomizedResMap()
 	if err != nil {
 		t.Fatalf("Err: %v", err)
@@ -187,5 +210,215 @@ spec:
       secretKeyRef:
         key: password
         name: wordpress-db-auth
+`)
+}
+
+type inlineCompositionTest struct{}
+
+func (ut *inlineCompositionTest) writeKustFileProb(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinecomposition/probe/", `
+resources:
+#- ../base
+- dep-patch.yaml
+
+vars: 
+- name: Deployment.probe.spec.template.spec.containers[0].livenessProbe
+  objref:
+    kind: Deployment
+    name: probe
+    apiVersion: extensions/v1beta1
+  fieldref:
+    fieldpath: spec.template.spec.containers[0].livenessProbe
+`)
+}
+func (ut *inlineCompositionTest) writeKustFileComposite(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinecomposition/composite/", `
+resources:
+- ../base
+- ../probe
+- ../dns
+- ../restart
+`)
+}
+func (ut *inlineCompositionTest) writeKustFileDns(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinecomposition/dns/", `
+resources:
+#- ../base
+- dep-patch.yaml
+
+vars:
+- name: Deployment.dns.spec.template.spec.dnsPolicy
+  objref:
+    kind: Deployment
+    name: dns
+    apiVersion: extensions/v1beta1
+  fieldref:
+    fieldpath: spec.template.spec.dnsPolicy
+`)
+}
+func (ut *inlineCompositionTest) writeKustFileBase(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinecomposition/base/", `
+resources:
+- deployment.yaml
+
+configurations:
+- kustomizeconfig.yaml
+`)
+}
+func (ut *inlineCompositionTest) writeKustFileRestart(th *kusttest_test.KustTestHarness) {
+	th.WriteK("/inlinecomposition/restart/", `
+resources:
+#- ../base
+- dep-patch.yaml
+
+vars:
+- name: Deployment.restart.spec.template.spec.restartPolicy
+  objref:
+    kind: Deployment
+    name: restart
+    apiVersion: extensions/v1beta1
+  fieldref:
+    fieldpath: spec.template.spec.restartPolicy
+`)
+}
+func (ut *inlineCompositionTest) writeKustomizeConfig(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinecomposition/base/kustomizeconfig.yaml", `
+varReference:
+- path: spec/template/spec/containers[]/livenessProbe
+  kind: Deployment
+- path: spec/template/spec/dnsPolicy
+  kind: Deployment
+- path: spec/template/spec/restartPolicy
+  kind: Deployment
+`)
+}
+func (ut *inlineCompositionTest) writeProbePatch(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinecomposition/probe/dep-patch.yaml", `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: probe
+  namespace: patch
+spec:
+  template:
+    spec:
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+`)
+}
+func (ut *inlineCompositionTest) writeDnsPatch(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinecomposition/dns/dep-patch.yaml", `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dns
+  namespace: patch
+spec:
+  template:
+    spec:
+      dnsPolicy: ClusterFirst
+`)
+}
+func (ut *inlineCompositionTest) writeBaseDeployment(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinecomposition/base/deployment.yaml", `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: my-deployment
+        image: my-image
+        livenessProbe: $(Deployment.probe.spec.template.spec.containers[0].livenessProbe)
+      dnsPolicy: $(Deployment.dns.spec.template.spec.dnsPolicy)
+      restartPolicy: $(Deployment.restart.spec.template.spec.restartPolicy)
+`)
+}
+func (ut *inlineCompositionTest) writeRestartPatch(th *kusttest_test.KustTestHarness) {
+	th.WriteF("/inlinecomposition/restart/dep-patch.yaml", `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: restart
+  namespace: patch
+spec:
+  template:
+    spec:
+      restartPolicy: Always
+`)
+}
+func TestInlineComposition(t *testing.T) {
+	ut := &inlineCompositionTest{}
+	th := kusttest_test.NewKustTestHarness(t, "/inlinecomposition/composite")
+	ut.writeKustFileBase(th)
+	ut.writeKustFileRestart(th)
+	ut.writeKustFileDns(th)
+	ut.writeKustFileProb(th)
+	ut.writeKustFileComposite(th)
+	ut.writeKustomizeConfig(th)
+	ut.writeRestartPatch(th)
+	ut.writeBaseDeployment(th)
+	ut.writeDnsPatch(th)
+	ut.writeProbePatch(th)
+	m, err := th.MakeKustTarget().MakeCustomizedResMap()
+	if err != nil {
+		t.Fatalf("Err: %v", err)
+	}
+	th.AssertActualEqualsExpected(m, `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - image: my-image
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        name: my-deployment
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: probe
+  namespace: patch
+spec:
+  template:
+    spec:
+      containers:
+      - livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dns
+  namespace: patch
+spec:
+  template:
+    spec:
+      dnsPolicy: ClusterFirst
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: restart
+  namespace: patch
+spec:
+  template:
+    spec:
+      restartPolicy: Always
 `)
 }
