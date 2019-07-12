@@ -32,6 +32,7 @@ type KustTarget struct {
 	rFactory      *resmap.Factory
 	tFactory      resmap.PatchFactory
 	pLdr          *plugins.Loader
+	dynamic       *types.Kustomization
 }
 
 // NewKustTarget returns a new instance of KustTarget primed with a Loader.
@@ -63,6 +64,7 @@ func NewKustTarget(
 		rFactory:      rFactory,
 		tFactory:      tFactory,
 		pLdr:          pLdr,
+		dynamic:       &types.Kustomization{},
 	}, nil
 }
 
@@ -300,24 +302,16 @@ func (kt *KustTarget) configureExternalGenerators() ([]resmap.Generator, error) 
 	return kt.pLdr.LoadGenerators(kt.ldr, ra.ResMap())
 }
 
+func (kt *KustTarget) absorbDynamicKustomization(ra *accumulator.ResAccumulator) {
+	orig := ra.GetPatchSet()
+	kt.dynamic.Patches = make([]types.Patch, len(orig))
+	copy(kt.dynamic.Patches, orig)
+}
+
 func (kt *KustTarget) runTransformers(ra *accumulator.ResAccumulator) error {
+	kt.absorbDynamicKustomization(ra)
+
 	var r []resmap.Transformer
-
-	// Convertion to the buildin transformer is not compatible with this PR
-	// differed := ra.ConflictingResources()
-	// patches, err := kt.rFactory.RF().SliceFromPatches(
-	// 	kt.ldr, kt.kustomization.PatchesStrategicMerge)
-	// if err != nil {
-	// 	return errors.Wrapf(
-	// 		err, "reading strategic merge patches %v",
-	// 		kt.kustomization.PatchesStrategicMerge)
-	// }
-	// t, err := kt.tFactory.MakePatchTransformer(append(differed, patches...), kt.rFactory.RF())
-	// if err != nil {
-	// 	return err
-	// }
-	// r = append(r, t)
-
 	tConfig := ra.GetTransformerConfig()
 	lts, err := kt.configureBuiltinTransformers(tConfig)
 	if err != nil {

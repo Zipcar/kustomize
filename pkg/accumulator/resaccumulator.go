@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"sigs.k8s.io/kustomize/v3/pkg/gvk"
 	"sigs.k8s.io/kustomize/v3/pkg/resid"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 	"sigs.k8s.io/kustomize/v3/pkg/resource"
@@ -21,11 +22,11 @@ import (
 // used to customize those resources.  It's a ResMap
 // plus stuff needed to modify the ResMap.
 type ResAccumulator struct {
-	resMap               resmap.ResMap
-	tConfig              *config.TransformerConfig
-	varSet               types.VarSet
-	conflictingResources []*resource.Resource
-	unresolvedVars       types.VarSet
+	resMap         resmap.ResMap
+	tConfig        *config.TransformerConfig
+	varSet         types.VarSet
+	patchSet       []types.Patch
+	unresolvedVars types.VarSet
 }
 
 func MakeEmptyAccumulator() *ResAccumulator {
@@ -33,7 +34,7 @@ func MakeEmptyAccumulator() *ResAccumulator {
 	ra.resMap = resmap.New()
 	ra.tConfig = &config.TransformerConfig{}
 	ra.varSet = types.NewVarSet()
-	ra.conflictingResources = []*resource.Resource{}
+	ra.patchSet = []types.Patch{}
 	ra.unresolvedVars = types.NewVarSet()
 	return ra
 }
@@ -51,11 +52,40 @@ func (ra *ResAccumulator) Vars() []types.Var {
 	return completeset.AsSlice()
 }
 
+// accumlatePatch accumulates the information regarding conflicting
+// resources as patches.
+func (ra *ResAccumulator) accumlatePatch(id resid.ResId, conflicting ...*resource.Resource) error {
+	target := types.Selector{
+		Gvk: gvk.Gvk{
+			Group:   id.Group,
+			Version: id.Version,
+			Kind:    id.Kind,
+		},
+		Namespace:          id.Namespace,
+		Name:               id.Name,
+		AnnotationSelector: "",
+		LabelSelector:      "",
+	}
+
+	for _, res := range conflicting {
+		out, err := res.AsYAML()
+		if err != nil {
+			return err
+		}
+		newPatch := types.Patch{
+			Path:   "",
+			Patch:  string(out),
+			Target: &target,
+		}
+		ra.patchSet = append(ra.patchSet, newPatch)
+	}
+	return nil
+}
+
 // HandoverConflictingResources removes conflicting resources from the local accumulator
 // and add the conflicting resources list in the other accumulator.
 // Conflicting is defined as have the same CurrentId but different Values.
 func (ra *ResAccumulator) HandoverConflictingResources(other *ResAccumulator) error {
-	conflicting := []*resource.Resource{}
 	for _, rightResource := range other.ResMap().Resources() {
 		rightId := rightResource.CurId()
 		leftResources := ra.resMap.GetMatchingResourcesByCurrentId(rightId.Equals)
@@ -68,10 +98,16 @@ func (ra *ResAccumulator) HandoverConflictingResources(other *ResAccumulator) er
 		// TODO(jeb): Not sure we want to use DeepEqual here since there are some fields
 		// which are artifacts (nameprefix, namesuffix, refvar, refby) added to the resources
 		// by the algorithm here.
+		// Also we may be dropping here some of the artifacts (nameprefix, namesuffix,...)
+		// during the conversion from Resource/ResMap to Patch.
 		if len(leftResources) != 1 || !reflect.DeepEqual(leftResources[0], rightResource) {
 			// conflict detected. More than one resource or left and right are different.
-			conflicting = append(conflicting, rightResource)
-			conflicting = append(conflicting, leftResources...)
+			if err := other.accumlatePatch(rightId, rightResource); err != nil {
+				return err
+			}
+			if err := other.accumlatePatch(rightId, leftResources...); err != nil {
+				return err
+			}
 		}
 
 		// Remove the resource from that resMap
@@ -81,17 +117,14 @@ func (ra *ResAccumulator) HandoverConflictingResources(other *ResAccumulator) er
 		}
 	}
 
-	// TODO(jeb): Should the conflictingResources be a ResMap ?. We are dropping here
-	// some of the artifacts (nameprefix, namesuffix,...)
-	other.conflictingResources = append(other.conflictingResources, conflicting...)
 	return nil
 }
 
 // ConflictingResources return the list of resources that have been
 // put aside. It will let the PatchTransformer decide how to handle
 // the conflict, assuming the Transformer can.
-func (ra *ResAccumulator) ConflictingResources() []*resource.Resource {
-	return ra.conflictingResources
+func (ra *ResAccumulator) GetPatchSet() []types.Patch {
+	return ra.patchSet
 }
 
 func (ra *ResAccumulator) AppendAll(
