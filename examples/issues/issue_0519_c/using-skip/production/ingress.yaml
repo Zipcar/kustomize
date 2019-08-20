@@ -1,0 +1,7 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: kubeapp
+  name: kubeapp
+  namespace: kubeapp-ns
