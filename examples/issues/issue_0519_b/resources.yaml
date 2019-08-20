@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myDeployment
+spec:
+  template:
+    metadata:
+      labels:
+        backend: awesome
+    spec:
+      containers:
+      - name: whatever
+        image: whatever
+---
+apiVersion: v1
+kind: Role
+metadata:
+  name: myRole
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myService
