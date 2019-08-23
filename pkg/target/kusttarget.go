@@ -304,7 +304,7 @@ func (kt *KustTarget) configureExternalGenerators() ([]transformers.Generator, e
 }
 
 func (kt *KustTarget) absorbDynamicKustomization(ra *accumulator.ResAccumulator) {
-	orig := ra.GetPatchSet()
+	orig := ra.PatchSet()
 	kt.dynamic.Patches = make([]types.Patch, len(orig))
 	copy(kt.dynamic.Patches, orig)
 }
