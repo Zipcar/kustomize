@@ -120,10 +120,10 @@ func (ra *ResAccumulator) HandoverConflictingResources(other *ResAccumulator) er
 	return nil
 }
 
-// ConflictingResources return the list of resources that have been
+// PatchSet return the list of resources that have been
 // put aside. It will let the PatchTransformer decide how to handle
 // the conflict, assuming the Transformer can.
-func (ra *ResAccumulator) GetPatchSet() []types.Patch {
+func (ra *ResAccumulator) PatchSet() []types.Patch {
 	return ra.patchSet
 }
 
@@ -148,7 +148,7 @@ func (ra *ResAccumulator) GetTransformerConfig() *config.TransformerConfig {
 }
 
 // AppendUnresolvedVars accumulates the non conflicting and unresolved variables
-// from one accumulator into another. Returns an error is a conflict is detected.
+// from one accumulator into another. Returns an error if a conflict is detected.
 func (ra *ResAccumulator) AppendUnresolvedVars(otherSet types.VarSet) error {
 	return ra.unresolvedVars.AbsorbSet(otherSet)
 }
@@ -175,10 +175,11 @@ func (ra *ResAccumulator) AppendResolvedVars(otherSet types.VarSet) error {
 		matched := ra.resMap.GetMatchingResourcesByOriginalId(
 			resid.NewResId(v.ObjRef.GVK(), v.ObjRef.Name).GvknEquals)
 		if len(matched) > 1 {
-			// We detected a diamond import of kustomization context
-			// where one variable pointing at one resource in each
-			// context is now poiting at two resources (different CurrId)
-			// because the two contexts have been merged.
+			// We detected a diamond import of kustomization
+			// context where one variable pointing at one resource
+			// in each context is now pointing at two resources
+			// (different CurrId) because the two contexts have
+			// been merged.
 			return fmt.Errorf(
 				"found %d resId matches for var %s "+
 					"(unable to disambiguate)",
