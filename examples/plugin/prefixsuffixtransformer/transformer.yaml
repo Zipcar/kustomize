@@ -1,0 +1,6 @@
+apiVersion: builtin
+kind: PrefixSuffixTransformer
+metadata:
+  name: prefixsuffixtransformer
+fieldSpecs:
+  - path: metadata/name

@@ -1,0 +1,14 @@
+annotationstransformer
+configmapgenerator
+hashtransformer
+imagetagtransformer
+inventorytransformer
+labeltransformer
+legacyordertransformer
+namespacetransformer
+patchjson6902transformer
+patchstrategicmergetransformer
+patchtransformer
+prefixsuffixtransformer
+replicacounttransformer
+secretgenerator
