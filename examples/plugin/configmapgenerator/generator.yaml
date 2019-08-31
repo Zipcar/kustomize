@@ -1,0 +1,5 @@
+apiVersion: builtin
+kind: ConfigMapGenerator
+metadata:
+  name: configmapgenerator
+fieldSpecs:

@@ -1,0 +1,5 @@
+apiVersion: builtin
+kind: LabelTransformer
+metadata:
+  name: labeltransformer
+fieldSpecs:
