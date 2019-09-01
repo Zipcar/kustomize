@@ -23,7 +23,7 @@ echo Generating linkable plugins...
 
 pushd $dir >& /dev/null
 
-for i in `cat plugin/pluginList`
+for i in `cat plugin/pluginList | grep -v '#'`
 do
   echo $i
   GOPATH=$myGoPath GO111MODULE=on go build -buildmode plugin -o ${HOME}/.config/kustomize/${i}.so ./$i.go

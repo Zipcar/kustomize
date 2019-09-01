@@ -9,11 +9,11 @@ kubectldeleteordertransformer
 labeltransformer
 legacyordertransformer
 namespacetransformer
-# patchjson6902transformer
-# patchstrategicmergetransformer
-# patchtransformer
+patchjson6902transformer
+patchstrategicmergetransformer
+patchtransformer
 prefixsuffixtransformer
-# replicacounttransformer
+replicacounttransformer
 secretgenerator
 secretsfromdatabase
 someservicegenerator

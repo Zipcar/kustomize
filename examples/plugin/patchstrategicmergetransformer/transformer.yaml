@@ -2,4 +2,5 @@ apiVersion: builtin
 kind: PatchStrategicMergeTransformer
 metadata:
   name: patchstrategicmergetransformer
-fieldSpecs:
+paths:
+- patch.yaml

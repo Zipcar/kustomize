@@ -34,7 +34,12 @@ spec:
         metadata:
           type: object
         spec:
-          type: string
+          properties:
+            replica:
+              type: integer
+            simpletext:
+              type: string
+          type: object
   version: v1alpha1
 status:
   acceptedNames:
@@ -52,4 +57,6 @@ apiVersion: my.org/v1alpha1
 kind: MyCRD
 metadata:
   name: 2018-05-11-my-crd
-spec: some simple text
+spec:
+  replica: 123
+  simpletext: some simple text

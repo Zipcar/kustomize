@@ -2,4 +2,4 @@ apiVersion: builtin
 kind: PatchTransformer
 metadata:
   name: patchtransformer
-fieldSpecs:
+path: patch.yaml
