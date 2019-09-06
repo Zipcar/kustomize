@@ -16,7 +16,7 @@ DEMO_HOME=$(mktemp -d)
 
 <!-- @makeDirectories @test -->
 ```bash
-mkdir -p ${DEMO_HOME}//home/jb447c/src/sigs.k8s.io/kustomize/examples/issues/issue_1250
+mkdir -p ${DEMO_HOME}/
 ```
 
 ### Preparation Step KustomizationFile0

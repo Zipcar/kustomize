@@ -16,6 +16,7 @@ DEMO_HOME=$(mktemp -d)
 
 <!-- @makeDirectories @test -->
 ```bash
+mkdir -p ${DEMO_HOME}/
 mkdir -p ${DEMO_HOME}/app1
 mkdir -p ${DEMO_HOME}/app2
 mkdir -p ${DEMO_HOME}/component1
@@ -112,8 +113,9 @@ EOF
 <!-- @build @test -->
 ```bash
 mkdir ${DEMO_HOME}/actual
-kustomize build ${DEMO_HOME}/app1 -o ${DEMO_HOME}/actual
-kustomize build ${DEMO_HOME}/app2 -o ${DEMO_HOME}/actual
+kustomize build ${DEMO_HOME}/app1 -o ${DEMO_HOME}/actual/app1.yaml
+kustomize build ${DEMO_HOME}/app2 -o ${DEMO_HOME}/actual/app2.yaml
+kustomize build ${DEMO_HOME} -o ${DEMO_HOME}/actual/both.yaml
 ```
 
 ## Verification
@@ -128,7 +130,7 @@ mkdir ${DEMO_HOME}/expected
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/~g_v1_pod_app1-component1.yaml
+cat <<'EOF' >${DEMO_HOME}/expected/app1.yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -150,7 +152,43 @@ EOF
 
 <!-- @createExpected1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/~g_v1_pod_app2-component1.yaml
+cat <<'EOF' >${DEMO_HOME}/expected/app2.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app2-component1
+spec:
+  containers:
+  - env:
+    - name: POD_NAME
+      value: app2-component1
+    - name: IMAGE_NAME
+      value: bash
+    image: bash
+    name: component1
+EOF
+```
+
+
+### Verification Step Expected2
+
+<!-- @createExpected2 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/expected/both.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app1-component1
+spec:
+  containers:
+  - env:
+    - name: POD_NAME
+      value: app1-component1
+    - name: IMAGE_NAME
+      value: bash
+    image: bash
+    name: component1
+---
 apiVersion: v1
 kind: Pod
 metadata:

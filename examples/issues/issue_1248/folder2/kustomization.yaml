@@ -3,5 +3,5 @@ kind: Kustomization
 namespace: cstmr-zvyjvn35b81rkfkr87fznrpanw5op9x5yo0
 resources:
   - namespace.yaml
-  - app-installations/folder4
+  - app-installations/subfolder
 

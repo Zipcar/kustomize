@@ -1,3 +1,4 @@
 resources:
-- projects/foo
-- projects/bar
+- ./environment
+- ./projects/foo
+- ./projects/bar
