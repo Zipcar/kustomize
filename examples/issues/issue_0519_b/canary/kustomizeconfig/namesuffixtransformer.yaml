@@ -2,9 +2,12 @@ apiVersion: builtin
 kind: PrefixSuffixTransformer
 metadata:
   name: customPrefixer
-prefix: zzz-
+suffix: -canary
 fieldSpecs:
 - kind: Deployment
   path: metadata/name
 - kind: Service
   path: metadata/name
+- kind: Ingress
+  path: spec/backend/serviceName
+

@@ -16,7 +16,7 @@ DEMO_HOME=$(mktemp -d)
 
 <!-- @makeDirectories @test -->
 ```bash
-mkdir -p ${DEMO_HOME}//home/jb447c/src/sigs.k8s.io/kustomize/examples/issues/issue_1251_e
+mkdir -p ${DEMO_HOME}/
 mkdir -p ${DEMO_HOME}/inheritance
 mkdir -p ${DEMO_HOME}/inheritance/base
 mkdir -p ${DEMO_HOME}/inheritance/composite

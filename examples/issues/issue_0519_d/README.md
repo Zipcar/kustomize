@@ -1,4 +1,4 @@
-# Feature Test for Issue 0519_b
+# Feature Test for Issue 0519_d
 
 This folder contains files describing how to address [Issue 0519](https://github.com/kubernetes-sigs/kustomize/issues/0519)
 Original kubernetes files have imported from [here](https://github.com/DockbitExamples/kubernetes)
@@ -22,32 +22,31 @@ DEMO_HOME=$(mktemp -d)
 <!-- @makeDirectories @test -->
 ```bash
 mkdir -p ${DEMO_HOME}/
-mkdir -p ${DEMO_HOME}/base
-mkdir -p ${DEMO_HOME}/base/kustomizeconfig
-mkdir -p ${DEMO_HOME}/canary
-mkdir -p ${DEMO_HOME}/canary/kustomizeconfig
-mkdir -p ${DEMO_HOME}/production
-mkdir -p ${DEMO_HOME}/production/kustomizeconfig
+mkdir -p ${DEMO_HOME}/composite
+mkdir -p ${DEMO_HOME}/composite/canary
+mkdir -p ${DEMO_HOME}/composite/production
+mkdir -p ${DEMO_HOME}/constant
+mkdir -p ${DEMO_HOME}/variable
+mkdir -p ${DEMO_HOME}/variable/base
+mkdir -p ${DEMO_HOME}/variable/canary
+mkdir -p ${DEMO_HOME}/variable/production
 ```
 
 ### Preparation Step KustomizationFile0
 
 <!-- @createKustomizationFile0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/kustomization.yaml
+cat <<'EOF' >${DEMO_HOME}/composite/canary/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ./namespace.yaml
-- ./mycrd.yaml
+- ../../constant
+- ../../variable/canary
 - ./ingress.yaml
-- ./service.yaml
-- ./deployment.yaml
 
-transformers:
-- ./kustomizeconfig/namespacetransformer.yaml
-- ./kustomizeconfig/commonlabelstransformer.yaml
+patchesStrategicMerge:
+# - ./ingress.yaml
 EOF
 ```
 
@@ -56,18 +55,14 @@ EOF
 
 <!-- @createKustomizationFile1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/canary/kustomization.yaml
+cat <<'EOF' >${DEMO_HOME}/composite/production/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ../base
-
-transformers:
-- ./kustomizeconfig/imagetransformer.yaml
-- ./kustomizeconfig/namesuffixtransformer.yaml
-- ./kustomizeconfig/commonlabelstransformer.yaml
-- ./kustomizeconfig/patchstrategicmergetransformer.yaml
+- ../../constant
+- ../../variable/production
+- ./ingress.yaml
 EOF
 ```
 
@@ -76,18 +71,79 @@ EOF
 
 <!-- @createKustomizationFile2 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/production/kustomization.yaml
+cat <<'EOF' >${DEMO_HOME}/constant/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+- ./namespace.yaml
+- ./mycrd.yaml
+EOF
+```
+
+
+### Preparation Step KustomizationFile3
+
+<!-- @createKustomizationFile3 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/variable/base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeapp-ns
+
+commonLabels:
+  app: kubeapp
+
+resources:
+- ./service.yaml
+- ./deployment.yaml
+EOF
+```
+
+
+### Preparation Step KustomizationFile4
+
+<!-- @createKustomizationFile4 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/variable/canary/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  env: canary
+
+nameSuffix: -canary
+
+resources:
 - ../base
 
-transformers:
-- ./kustomizeconfig/imagetransformer.yaml
-- ./kustomizeconfig/namesuffixtransformer.yaml
-- ./kustomizeconfig/commonlabelstransformer.yaml
-- ./kustomizeconfig/patchstrategicmergetransformer.yaml
+images:
+- name: hack4easy/kubesim_health-amd64
+  newTag: 0.1.9
+EOF
+```
+
+
+### Preparation Step KustomizationFile5
+
+<!-- @createKustomizationFile5 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/variable/production/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  env: production
+
+nameSuffix: -production
+
+resources:
+- ../base
+
+images:
+- name: hack4easy/kubesim_health-amd64
+  newTag: 0.1.0
 EOF
 ```
 
@@ -96,34 +152,31 @@ EOF
 
 <!-- @createResource0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/deployment.yaml
-kind: Deployment
+cat <<'EOF' >${DEMO_HOME}/composite/canary/ingress.yaml
 apiVersion: extensions/v1beta1
+kind: Ingress
 metadata:
+  labels:
+    app: kubeapp
   name: kubeapp
+  namespace: kubeapp-ns
 spec:
-  replicas: 1
-  template:
-    metadata:
-      name: kubeapp
-      labels:
-        app: kubeapp
-    spec:
-      containers:
-      - name: kubeapp
-        image: hack4easy/kubesim_health-amd64:latest
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          httpGet:
-            path: /liveness
-            port: 8081
-        readinessProbe:
-          httpGet:
-            path: /readiness
-            port: 8081
-        ports:
-        - name: kubeapp
-          containerPort: 8081
+  backend:
+    serviceName: kubeapp-production
+    servicePort: 80
+  rules:
+  - host: canary.foo.bar
+    http:
+      paths:
+      - backend:
+          serviceName: kubeapp-canary
+          servicePort: 80
+  - host: foo.bar
+    http:
+      paths:
+      - backend:
+          serviceName: kubeapp-production
+          servicePort: 80
 EOF
 ```
 
@@ -132,14 +185,17 @@ EOF
 
 <!-- @createResource1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/ingress.yaml
-kind: Ingress
+cat <<'EOF' >${DEMO_HOME}/composite/production/ingress.yaml
 apiVersion: extensions/v1beta1
+kind: Ingress
 metadata:
+  labels:
+    app: kubeapp
   name: kubeapp
+  namespace: kubeapp-ns
 spec:
   backend:
-    serviceName: kubeapp
+    serviceName: kubeapp-production
     servicePort: 80
 EOF
 ```
@@ -149,65 +205,7 @@ EOF
 
 <!-- @createResource2 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/kustomizeconfig/commonlabelstransformer.yaml
-apiVersion: builtin
-kind: LabelTransformer
-metadata:
-  name: labeltransformer
-labels:
-  app: kubeapp
-fieldSpecs:
-- path: metadata/labels
-  create: true
-  kind: Service
-- path: spec/selector
-  create: true
-  kind: Service
-- path: metadata/labels
-  create: true
-  kind: Deployment
-- path: spec/selector/matchLabels
-  create: true
-  kind: Deployment
-- path: spec/template/metadata/labels
-  create: true
-  kind: Deployment
-- path: metadata/labels
-  create: true
-  kind: Ingress
-EOF
-```
-
-
-### Preparation Step Resource3
-
-<!-- @createResource3 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/base/kustomizeconfig/namespacetransformer.yaml
-apiVersion: builtin
-kind: NamespaceTransformer
-metadata:
-  name: namespacetransformer
-  namespace: kubeapp-ns
-fieldSpecs:
-- path: metadata/namespace
-  create: true
-  kind: Service
-- path: metadata/namespace
-  create: true
-  kind: Deployment
-- path: metadata/namespace
-  create: true
-  kind: Ingress
-EOF
-```
-
-
-### Preparation Step Resource4
-
-<!-- @createResource4 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/base/mycrd.yaml
+cat <<'EOF' >${DEMO_HOME}/constant/mycrd.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -264,11 +262,11 @@ EOF
 ```
 
 
-### Preparation Step Resource5
+### Preparation Step Resource3
 
-<!-- @createResource5 @test -->
+<!-- @createResource3 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/namespace.yaml
+cat <<'EOF' >${DEMO_HOME}/constant/namespace.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -277,11 +275,47 @@ EOF
 ```
 
 
-### Preparation Step Resource6
+### Preparation Step Resource4
 
-<!-- @createResource6 @test -->
+<!-- @createResource4 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/base/service.yaml
+cat <<'EOF' >${DEMO_HOME}/variable/base/deployment.yaml
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: kubeapp
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: kubeapp
+      labels:
+        app: kubeapp
+    spec:
+      containers:
+      - name: kubeapp
+        image: hack4easy/kubesim_health-amd64:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 8081
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8081
+        ports:
+        - name: kubeapp
+          containerPort: 8081
+EOF
+```
+
+
+### Preparation Step Resource5
+
+<!-- @createResource5 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/variable/base/service.yaml
 kind: Service
 apiVersion: v1
 metadata:
@@ -298,229 +332,6 @@ spec:
 EOF
 ```
 
-
-### Preparation Step Resource7
-
-<!-- @createResource7 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/canary/ingress.yaml
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  labels:
-    app: kubeapp
-  name: kubeapp
-  namespace: kubeapp-ns
-spec:
-  backend:
-    serviceName: kubeapp-production
-    servicePort: 80
-  rules:
-  - host: canary.foo.bar
-    http:
-      paths:
-      - backend:
-          serviceName: kubeapp-canary
-          servicePort: 80
-  - host: foo.bar
-    http:
-      paths:
-      - backend:
-          serviceName: kubeapp-production
-          servicePort: 80
-EOF
-```
-
-
-### Preparation Step Resource8
-
-<!-- @createResource8 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/canary/kustomizeconfig/commonlabelstransformer.yaml
-apiVersion: builtin
-kind: LabelTransformer
-metadata:
-  name: labeltransformer
-labels:
-  env: canary
-fieldSpecs:
-- path: metadata/labels
-  create: true
-  kind: Service
-- path: spec/selector
-  create: true
-  kind: Service
-- path: metadata/labels
-  create: true
-  kind: Deployment
-- path: spec/selector/matchLabels
-  create: true
-  kind: Deployment
-- path: spec/template/metadata/labels
-  create: true
-  kind: Deployment
-EOF
-```
-
-
-### Preparation Step Resource9
-
-<!-- @createResource9 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/canary/kustomizeconfig/imagetransformer.yaml
-apiVersion: builtin
-kind: ImageTagTransformer
-metadata:
-  name: imagetagtransformer
-imageTag:
-  name: hack4easy/kubesim_health-amd64
-  newTag: 0.1.9
-# fieldSpecs is left empty since `containers` and `initContainers`
-# of *ANY* kind in *ANY* path are builtin supported in code
-fieldSpecs:
-EOF
-```
-
-
-### Preparation Step Resource10
-
-<!-- @createResource10 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/canary/kustomizeconfig/namesuffixtransformer.yaml
-apiVersion: builtin
-kind: PrefixSuffixTransformer
-metadata:
-  name: customPrefixer
-suffix: -canary
-fieldSpecs:
-- kind: Deployment
-  path: metadata/name
-- kind: Service
-  path: metadata/name
-- kind: Ingress
-  path: spec/backend/serviceName
-
-EOF
-```
-
-
-### Preparation Step Resource11
-
-<!-- @createResource11 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/canary/kustomizeconfig/patchstrategicmergetransformer.yaml
-apiVersion: builtin
-kind: PatchStrategicMergeTransformer
-metadata:
-  name: patchstrategicmergetransformer
-paths:
-- ingress.yaml
-EOF
-```
-
-
-### Preparation Step Resource12
-
-<!-- @createResource12 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/production/ingress.yaml
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  labels:
-    app: kubeapp
-  name: kubeapp
-  namespace: kubeapp-ns
-EOF
-```
-
-
-### Preparation Step Resource13
-
-<!-- @createResource13 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/production/kustomizeconfig/commonlabelstransformer.yaml
-apiVersion: builtin
-kind: LabelTransformer
-metadata:
-  name: labeltransformer
-labels:
-  env: production
-fieldSpecs:
-- path: metadata/labels
-  create: true
-  kind: Service
-- path: spec/selector
-  create: true
-  kind: Service
-- path: metadata/labels
-  create: true
-  kind: Deployment
-- path: spec/selector/matchLabels
-  create: true
-  kind: Deployment
-- path: spec/template/metadata/labels
-  create: true
-  kind: Deployment
-EOF
-```
-
-
-### Preparation Step Resource14
-
-<!-- @createResource14 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/production/kustomizeconfig/imagetransformer.yaml
-apiVersion: builtin
-kind: ImageTagTransformer
-metadata:
-  name: imagetagtransformer
-imageTag:
-  name: hack4easy/kubesim_health-amd64
-  newTag: 0.1.0
-# fieldSpecs is left empty since `containers` and `initContainers`
-# of *ANY* kind in *ANY* path are builtin supported in code
-fieldSpecs:
-EOF
-```
-
-
-### Preparation Step Resource15
-
-<!-- @createResource15 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/production/kustomizeconfig/namesuffixtransformer.yaml
-apiVersion: builtin
-kind: PrefixSuffixTransformer
-metadata:
-  name: customPrefixer
-suffix: -production
-fieldSpecs:
-- kind: Deployment
-  path: metadata/name
-- kind: Service
-  path: metadata/name
-- kind: Ingress
-  path: spec/backend/serviceName
-
-EOF
-```
-
-
-### Preparation Step Resource16
-
-<!-- @createResource16 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/production/kustomizeconfig/patchstrategicmergetransformer.yaml
-apiVersion: builtin
-kind: PatchStrategicMergeTransformer
-metadata:
-  name: patchstrategicmergetransformer
-paths:
-- ingress.yaml
-EOF
-```
-
 ## Execution
 
 <!-- @build @test -->
@@ -528,8 +339,8 @@ EOF
 mkdir ${DEMO_HOME}/actual
 mkdir ${DEMO_HOME}/actual/production
 mkdir ${DEMO_HOME}/actual/canary
-kustomize build ${DEMO_HOME}/production -o ${DEMO_HOME}/actual/production --enable_alpha_plugins
-kustomize build ${DEMO_HOME}/canary -o ${DEMO_HOME}/actual/canary --enable_alpha_plugins
+kustomize build ${DEMO_HOME}/composite/production -o ${DEMO_HOME}/actual/production
+kustomize build ${DEMO_HOME}/composite/canary -o ${DEMO_HOME}/actual/canary
 ```
 
 ## Verification
@@ -540,6 +351,7 @@ mkdir ${DEMO_HOME}/expected
 mkdir ${DEMO_HOME}/expected/production
 mkdir ${DEMO_HOME}/expected/canary
 ```
+
 ### Verification Step Expected0
 
 <!-- @createExpected0 @test -->
