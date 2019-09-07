@@ -10,22 +10,23 @@ import (
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 )
 
+// plugin loads the argoproj Rollout CRD scheme into kustomize
 type plugin struct {
 	ldr ifc.Loader
 	rf  *resmap.Factory
 }
 
+//nolint: golint
 //noinspection GoUnusedGlobalVariable
 var KustomizePlugin plugin
 
 func (p *plugin) Config(
-	ldr ifc.Loader, rf *resmap.Factory, c []byte) (err error) {
+	ldr ifc.Loader, rf *resmap.Factory, _ []byte) (err error) {
 	p.ldr = ldr
 	p.rf = rf
 
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
-	v1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
-	return nil
+	return v1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
 }
 
 func (p *plugin) Transform(m resmap.ResMap) error {
