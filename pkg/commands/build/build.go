@@ -5,11 +5,13 @@ package build
 
 import (
 	"io"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/kustomize/v3/pkg/transformers"
 	"sigs.k8s.io/kustomize/v3/pkg/fs"
 	"sigs.k8s.io/kustomize/v3/pkg/ifc"
 	"sigs.k8s.io/kustomize/v3/pkg/loader"
@@ -130,6 +132,16 @@ func (o *Options) RunBuild(
 	if err != nil {
 		return err
 	}
+
+	if (o.outputPath == "") || (o.outputPath != "" && !fSys.IsDir(o.outputPath)) {
+		t, err := o.loadKindFilterTransformerPlugin(kt)
+		if err != nil {
+			log.Printf("kind filter transformer could not be loaded: %s\n", err)
+		} else {
+			t.Transform(m)
+		}
+	}
+
 	return o.emitResources(out, fSys, m)
 }
 
@@ -151,7 +163,22 @@ func (o *Options) RunBuildPrune(
 	if err != nil {
 		return err
 	}
+
+	if (o.outputPath == "") || (o.outputPath != "" && !fSys.IsDir(o.outputPath)) {
+		t, err := o.loadKindFilterTransformerPlugin(kt)
+		if err != nil {
+			log.Printf("kind filter transformer could not be loaded: %s\n", err)
+		} else {
+			t.Transform(m)
+		}
+	}
+
 	return o.emitResources(out, fSys, m)
+}
+
+func (o *Options) loadKindFilterTransformerPlugin(kt *target.KustTarget) (transformers.Transformer, error) {
+	filtertransformers := []string{"kindfiltertransformer.yaml"}
+	return kt.LoadExternalTransformers(filtertransformers)
 }
 
 func (o *Options) emitResources(
