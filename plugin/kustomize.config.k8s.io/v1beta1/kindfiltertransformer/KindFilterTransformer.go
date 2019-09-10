@@ -16,6 +16,7 @@ type plugin struct {
 	Filter []string `json:"filter,omitempty" yaml:"filter,omitempty"`
 }
 
+//nolint: golint
 //noinspection GoUnusedGlobalVariable
 var KustomizePlugin plugin
 
