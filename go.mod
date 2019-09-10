@@ -4,29 +4,17 @@ go 1.12
 
 require (
 	github.com/argoproj/argo-rollouts v0.4.2
-	github.com/emicklei/go-restful v2.9.6+incompatible // indirect
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/go-openapi/spec v0.19.2
-	github.com/golang/protobuf v1.3.1 // indirect
-	github.com/google/gofuzz v1.0.0 // indirect
-	github.com/googleapis/gnostic v0.3.0 // indirect
-	github.com/json-iterator/go v1.1.6 // indirect
-	github.com/keleustes/armada-operator v1.4.1
-
-	github.com/mailru/easyjson v0.0.0-20190620125010-da37f6c1e481 // indirect
-	github.com/onsi/ginkgo v1.8.0 // indirect
-	github.com/onsi/gomega v1.5.0 // indirect
+	github.com/keleustes/armada-crd v0.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
-	golang.org/x/sys v0.0.0-20190621203818-d432491b9138 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/klog v0.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
-	k8s.io/utils v0.0.0-20190829053155-3a4a5477acf8 // indirect
 	sigs.k8s.io/yaml v1.1.0
 )
 

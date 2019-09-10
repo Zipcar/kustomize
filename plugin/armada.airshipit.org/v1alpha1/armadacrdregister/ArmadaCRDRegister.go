@@ -4,7 +4,7 @@
 package main
 
 import (
-	"github.com/keleustes/armada-operator/pkg/apis/armada/v1alpha1"
+	"github.com/keleustes/armada-crd/pkg/apis/armada/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/kustomize/v3/pkg/ifc"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
