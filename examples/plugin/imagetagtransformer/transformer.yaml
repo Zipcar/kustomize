@@ -1,0 +1,5 @@
+apiVersion: builtin
+kind: ImageTagTransformer
+metadata:
+  name: imagetagtransformer
+fieldSpecs:

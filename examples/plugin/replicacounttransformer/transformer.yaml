@@ -1,0 +1,11 @@
+apiVersion: builtin
+kind: ReplicaCountTransformer
+metadata:
+  name: replicacounttransformer
+replica:
+  name: my-crd
+  count: 23
+fieldSpecs:
+- path: spec/replicas
+  create: true
+  kind: MyCRD
