@@ -502,13 +502,11 @@ spec:
     image: whatever
     name: myServer
 `
-	_, err := th.MakeKustTarget().MakeCustomizedResMap()
-	if err == nil {
-		t.Fatalf("should have an error")
+	m, err := th.MakeKustTarget().MakeCustomizedResMap()
+	if err != nil {
+		t.Fatalf("Err: %v", err)
 	}
-	if !strings.Contains(err.Error(), "(unable to disambiguate)") {
-		t.Fatalf("unexpected err: %v", err)
-	}
+	th.AssertActualEqualsExpected(m, presumablyDesired)
 }
 
 func TestVarRefBig(t *testing.T) {
