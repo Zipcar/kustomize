@@ -3,10 +3,11 @@ kind: Kustomization
 resources:
 - etherpad-mysql.yaml
 vars:
-- name: MYSQL_SERVICE
+- name: MYSQL_SERVICE1
   objref:
     apiVersion: kubedb.com/v1alpha1
     kind: MySQL
     name: etherpad-mysql
+    # namespace: cstmr-72n16kk2an86kc4855ujzk9a9plo293274l
   fieldref:
     fieldpath: metadata.name

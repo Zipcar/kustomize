@@ -1,7 +1,7 @@
-# Feature Test for Issue 1251
+# Feature Test for Issue 1251_f
 
 
-This folder contains files describing how to address [Issue 1251](https://github.com/kubernetes-sigs/kustomize/issues/1251)
+This folder contains files describing how to address [Issue 1251_f](https://github.com/kubernetes-sigs/kustomize/issues/1251_f)
 
 ## Setup the workspace
 
@@ -16,6 +16,7 @@ DEMO_HOME=$(mktemp -d)
 
 <!-- @makeDirectories @test -->
 ```bash
+mkdir -p ${DEMO_HOME}/
 mkdir -p ${DEMO_HOME}/environment
 mkdir -p ${DEMO_HOME}/projects
 mkdir -p ${DEMO_HOME}/projects/bar
@@ -44,8 +45,9 @@ EOF
 ```bash
 cat <<'EOF' >${DEMO_HOME}/kustomization.yaml
 resources:
-- projects/foo
-- projects/bar
+- ./environment
+- ./projects/foo
+- ./projects/bar
 EOF
 ```
 
@@ -57,7 +59,6 @@ EOF
 cat <<'EOF' >${DEMO_HOME}/projects/bar/kustomization.yaml
 namespace: bar
 resources:
-  - ../../environment
   - manifests/ingress.yaml
 EOF
 ```
@@ -70,7 +71,6 @@ EOF
 cat <<'EOF' >${DEMO_HOME}/projects/foo/kustomization.yaml
 namespace: foo
 resources:
-  - ../../environment
   - manifests/ingress.yaml
 EOF
 ```
@@ -139,7 +139,7 @@ EOF
 <!-- @build @test -->
 ```bash
 mkdir ${DEMO_HOME}/actual
-kustomize build $DEMO_HOME -o ${DEMO_HOME}/actual
+kustomize build ${DEMO_HOME} -o ${DEMO_HOME}/actual
 ```
 
 ## Verification
@@ -176,12 +176,11 @@ EOF
 
 <!-- @createExpected1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/bar_kustomize.config.k8s.io_v1_values_shared.yaml
+cat <<'EOF' >${DEMO_HOME}/expected/default_kustomize.config.k8s.io_v1_values_shared.yaml
 apiVersion: kustomize.config.k8s.io/v1
 kind: Values
 metadata:
   name: shared
-  namespace: bar
 spec:
   branch: -branch
   domain: domain.com
@@ -208,24 +207,6 @@ spec:
       - backend:
           serviceName: foo
           servicePort: http
-EOF
-```
-
-
-### Verification Step Expected3
-
-<!-- @createExpected3 @test -->
-```bash
-cat <<'EOF' >${DEMO_HOME}/expected/foo_kustomize.config.k8s.io_v1_values_shared.yaml
-apiVersion: kustomize.config.k8s.io/v1
-kind: Values
-metadata:
-  name: shared
-  namespace: foo
-spec:
-  branch: -branch
-  domain: domain.com
-  env: dev
 EOF
 ```
 
