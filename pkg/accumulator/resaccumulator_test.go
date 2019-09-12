@@ -5,7 +5,6 @@ package accumulator_test
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -171,13 +170,20 @@ func TestResolveVarsVarNeedsDisambiguation(t *testing.T) {
 			},
 		},
 	})
-	if err == nil {
+	if err != nil {
 		t.Fatalf("expected error")
 	}
-	if !strings.Contains(
-		err.Error(), "unable to disambiguate") {
-		t.Fatalf("unexpected err: %v", err)
-	}
+
+	// Behavior has been modified.
+	// Conflict detection moved to VarMap object
+	// =============================================
+	// if err == nil {
+	// 	t.Fatalf("expected error")
+	// }
+	// if !strings.Contains(
+	// 	err.Error(), "unable to disambiguate") {
+	// 	t.Fatalf("unexpected err: %v", err)
+	// }
 }
 
 func TestResolveVarsGoodResIdBadField(t *testing.T) {
@@ -482,19 +488,22 @@ func TestAppendResolvedVarsDiamondWithConflicts(t *testing.T) {
 		t.Fatalf("unexpected err: %v", err)
 	}
 
-	// A second call will result in a conflicting variable name. Further,
-	// it will be unclear whether this variable refers to app1-backend or
-	// app2-backend. This is an error
-	expectedErrMsg := fmt.Sprintf(
-		"found %d resId matches for var %s "+
-			"(unable to disambiguate)",
-		ra.ResMap().Size(), serviceVar)
-	if err := ra.AppendResolvedVars(vars); err == nil {
-		t.Fatalf("expected error")
-	} else if err.Error() != expectedErrMsg {
-		t.Errorf("received the wrong error, expected `%s`, got `%s`",
-			expectedErrMsg, err.Error())
-	}
+	// Behavior has been modified.
+	// Conflict detection moved to VarMap object
+	// =============================================
+	// // A second call will result in a conflicting variable name. Further,
+	// // it will be unclear whether this variable refers to app1-backend or
+	// // app2-backend. This is an error
+	// expectedErrMsg := fmt.Sprintf(
+	// 	"found %d resId matches for var %s "+
+	// 		"(unable to disambiguate)",
+	// 	ra.ResMap().Size(), serviceVar)
+	// if err := ra.AppendResolvedVars(vars); err == nil {
+	// 	t.Fatalf("expected error")
+	// } else if err.Error() != expectedErrMsg {
+	// 	t.Errorf("received the wrong error, expected `%s`, got `%s`",
+	// 		expectedErrMsg, err.Error())
+	// }
 }
 
 func find(name string, resMap resmap.ResMap) *resource.Resource {

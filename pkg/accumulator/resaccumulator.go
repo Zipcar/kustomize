@@ -172,19 +172,22 @@ func (ra *ResAccumulator) AppendResolvedVars(otherSet types.VarSet) error {
 				"var '%s' already encountered", v.Name)
 		}
 
-		matched := ra.resMap.GetMatchingResourcesByOriginalId(
-			resid.NewResId(v.ObjRef.GVK(), v.ObjRef.Name).GvknEquals)
-		if len(matched) > 1 {
-			// We detected a diamond import of kustomization
-			// context where one variable pointing at one resource
-			// in each context is now pointing at two resources
-			// (different CurrId) because the two contexts have
-			// been merged.
-			return fmt.Errorf(
-				"found %d resId matches for var %s "+
-					"(unable to disambiguate)",
-				len(matched), v)
-		}
+		// Behavior has been modified.
+		// Conflict detection moved to VarMap object
+		// =============================================
+		// matched := ra.resMap.GetMatchingResourcesByOriginalId(
+		// 	resid.NewResId(v.ObjRef.GVK(), v.ObjRef.Name).GvknEquals)
+		// if len(matched) > 1 {
+		// 	// We detected a diamond import of kustomization
+		// 	// context where one variable pointing at one resource
+		// 	// in each context is now pointing at two resources
+		// 	// (different CurrId) because the two contexts have
+		// 	// been merged.
+		// 	return fmt.Errorf(
+		// 		"found %d resId matches for var %s "+
+		// 			"(unable to disambiguate)",
+		// 		len(matched), v)
+		// }
 	}
 	return ra.varSet.MergeSlice(mergeableVars)
 }
@@ -207,12 +210,16 @@ func (ra *ResAccumulator) MergeVars(incoming []types.Var) error {
 			idMatcher = targetId.Equals
 		}
 		matched := ra.resMap.GetMatchingResourcesByOriginalId(idMatcher)
-		if len(matched) > 1 {
-			return fmt.Errorf(
-				"found %d resId matches for var %s "+
-					"(unable to disambiguate)",
-				len(matched), v)
-		}
+
+		// Behavior has been modified.
+		// Conflict detection moved to VarMap object
+		// =============================================
+		// if len(matched) > 1 {
+		// 	return fmt.Errorf(
+		// 		"found %d resId matches for var %s "+
+		// 			"(unable to disambiguate)",
+		// 		len(matched), v)
+		// }
 
 		if len(matched) == 0 {
 			// no associated resources yet.
@@ -222,11 +229,13 @@ func (ra *ResAccumulator) MergeVars(incoming []types.Var) error {
 			continue
 		}
 
-		// Found one unique associated resource.
+		// Found one or more associated resource.
 		if err := ra.varSet.Absorb(v); err != nil {
 			return err
 		}
-		matched[0].AppendRefVarName(v)
+		for _, match := range matched {
+			match.AppendRefVarName(v)
+		}
 	}
 
 	return nil
@@ -248,39 +257,43 @@ func (ra *ResAccumulator) MergeAccumulator(other *ResAccumulator) (err error) {
 	return ra.AppendResolvedVars(other.varSet)
 }
 
-func (ra *ResAccumulator) findVarValueFromResources(v types.Var) (interface{}, error) {
+func (ra *ResAccumulator) findVarValueFromResources(v types.Var, varMap *resmap.VarMap) error {
+	foundCount := 0
 	for _, res := range ra.resMap.Resources() {
 		for _, varName := range res.GetRefVarNames() {
 			if varName == v.Name {
 				s, err := res.GetFieldValue(v.FieldRef.FieldPath)
 				if err != nil {
-					return "", fmt.Errorf(
+					return fmt.Errorf(
 						"field specified in var '%v' "+
 							"not found in corresponding resource", v)
 				}
 
-				return s, nil
+				foundCount++
+				varMap.Append(v.Name, res, s)
 			}
 		}
 	}
 
-	return "", fmt.Errorf(
-		"var '%v' cannot be mapped to a field "+
-			"in the set of known resources", v)
+	if foundCount == 0 {
+		return fmt.Errorf(
+			"var '%v' cannot be mapped to a field "+
+				"in the set of known resources", v)
+	}
+
+	return nil
 }
 
 // makeVarReplacementMap returns a map of Var names to
 // their final values. The values are strings intended
 // for substitution wherever the $(var.Name) occurs.
-func (ra *ResAccumulator) makeVarReplacementMap() (map[string]interface{}, error) {
-	result := map[string]interface{}{}
+func (ra *ResAccumulator) makeVarReplacementMap() (resmap.VarMap, error) {
+	result := resmap.NewEmptyVarMap()
 	for _, v := range ra.Vars() {
-		s, err := ra.findVarValueFromResources(v)
+		err := ra.findVarValueFromResources(v, &result)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
-
-		result[v.Name] = s
 	}
 
 	return result, nil
@@ -295,7 +308,7 @@ func (ra *ResAccumulator) ResolveVars() error {
 	if err != nil {
 		return err
 	}
-	if len(replacementMap) == 0 {
+	if len(replacementMap.VarNames()) == 0 {
 		return nil
 	}
 	t := transformers.NewRefVarTransformer(

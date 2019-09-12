@@ -4,12 +4,12 @@
 package target
 
 import (
-	"strings"
 	"sigs.k8s.io/kustomize/v3/pkg/image"
 	"sigs.k8s.io/kustomize/v3/pkg/plugins"
 	"sigs.k8s.io/kustomize/v3/pkg/resmap"
 	"sigs.k8s.io/kustomize/v3/pkg/transformers/config"
 	"sigs.k8s.io/kustomize/v3/pkg/types"
+	"strings"
 )
 
 // Functions dedicated to configuring the builtin
@@ -175,7 +175,7 @@ var transformerConfigurators = map[plugins.BuiltinPluginType]func(
 	plugins.PatchStrategicMergeTransformer: func(
 		kt *KustTarget, bpt plugins.BuiltinPluginType, f tFactory, _ *config.TransformerConfig) (
 		result []resmap.Transformer, err error) {
-	        if len(kt.kustomization.PatchesStrategicMerge) == 0 && len(kt.dynamic.Patches) == 0 {
+		if len(kt.kustomization.PatchesStrategicMerge) == 0 && len(kt.dynamic.Patches) == 0 {
 			return
 		}
 		var c struct {
