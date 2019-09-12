@@ -42,7 +42,7 @@ var catalog = types.Target{
 
 // newVarRefSlice sorts the fsSlice according to the path
 // instead of the GVK (see fielspec.go)
-func newVarRefSlice(fs []FieldSpec) fsSlice {
+func newVarRefSlice(fs FieldSpecs) FieldSpecs {
 	va := make([]FieldSpec, len(fs))
 	copy(va, fs)
 	sort.Slice(va, func(i, j int) bool {
@@ -108,9 +108,9 @@ func TestResMapScanner(t *testing.T) {
 						FieldRef: types.FieldSelector{FieldPath: "spec.key_name"}},
 				},
 				varReference: fsSlice{
-					{Gvk: cmap, Path: `metadata/annotations/my.org`},
-					{Gvk: cmap, Path: `metadata/annotations/my\/org`},
-					{Gvk: cmap, Path: `data/item1`},
+					{FieldSpec: FieldSpec{Gvk: cmap, Path: `metadata/annotations/my.org`}},
+					{FieldSpec: FieldSpec{Gvk: cmap, Path: `metadata/annotations/my\/org`}},
+					{FieldSpec: FieldSpec{Gvk: cmap, Path: `data/item1`}},
 				},
 			},
 		},
@@ -148,7 +148,7 @@ func TestResMapScanner(t *testing.T) {
 						FieldRef: types.FieldSelector{FieldPath: "spec.key_name"}},
 				},
 				varReference: fsSlice{
-					{Gvk: cmap, Path: "data"},
+					{FieldSpec: FieldSpec{Gvk: cmap, Path: "data"}},
 				},
 			},
 		},
@@ -194,7 +194,7 @@ func TestResMapScanner(t *testing.T) {
 						FieldRef: types.FieldSelector{FieldPath: "spec.key_name"}},
 				},
 				varReference: fsSlice{
-					{Gvk: cmap, Path: "data/someslice/item2"},
+					{FieldSpec: FieldSpec{Gvk: cmap, Path: "data/someslice/item2"}},
 				},
 			},
 		},
@@ -215,7 +215,7 @@ func TestResMapScanner(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 
-			va, ve := newVarRefSlice(tr.DiscoveredConfig().VarReference), newVarRefSlice(tc.expected.varReference)
+			va, ve := newVarRefSlice(tr.DiscoveredConfig().VarReferenceFieldSpecs()), newVarRefSlice(NewFieldSpecs(tc.expected.varReference))
 			if !reflect.DeepEqual(va, ve) {
 				t.Fatalf("VarReference actual doesn't match expected: \nACTUAL:\n%v\nEXPECTED:\n%v", va, ve)
 			}

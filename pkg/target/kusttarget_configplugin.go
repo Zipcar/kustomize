@@ -4,6 +4,8 @@
 package target
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"sigs.k8s.io/kustomize/v3/pkg/image"
 	"sigs.k8s.io/kustomize/v3/pkg/plugins"
@@ -167,10 +169,21 @@ func (kt *KustTarget) configureBuiltinPatchJson6902Transformer(
 	return
 }
 
+// Until Issue 1292 is implemented, use PathStrategicMerge to address
+// when possible diamond merge issues.
+func (kt *KustTarget) asString(patchSet []types.Patch) string {
+	res := []string{}
+	for _, patch := range patchSet {
+		res = append(res, patch.Patch)
+	}
+	return strings.Join(res, "---\n")
+}
+
 func (kt *KustTarget) configureBuiltinPatchStrategicMergeTransformer(
 	tConfig *config.TransformerConfig) (
 	result []transformers.Transformer, err error) {
-	if len(kt.kustomization.PatchesStrategicMerge) == 0 {
+	if len(kt.kustomization.PatchesStrategicMerge) == 0 && len(kt.dynamic.Patches) == 0 {
+		result = append(result, transformers.NewNoOpTransformer())
 		return
 	}
 	var c struct {
@@ -178,6 +191,7 @@ func (kt *KustTarget) configureBuiltinPatchStrategicMergeTransformer(
 		Patches string                      `json:"patches,omitempty" yaml:"patches,omitempty"`
 	}
 	c.Paths = kt.kustomization.PatchesStrategicMerge
+	c.Patches = kt.asString(kt.dynamic.Patches)
 	p := builtin.NewPatchStrategicMergeTransformerPlugin()
 	err = kt.configureBuiltinPlugin(p, c, "patchStrategicMerge")
 	if err != nil {
