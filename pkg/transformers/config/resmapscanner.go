@@ -282,7 +282,7 @@ func (rv *ResMapScanner) BuildAutoConfig(m resmap.ResMap) error {
 					}
 
 					rv.autoVars.Merge(*tVar)
-					matched[0].AppendRefVarName(*tVar)
+					matched[0].AbsorbRefVarName(*tVar)
 					rv.autoRefs, _ = rv.autoRefs.mergeOne(*varReference)
 				}
 			}
