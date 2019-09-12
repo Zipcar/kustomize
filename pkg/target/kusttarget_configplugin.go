@@ -135,7 +135,7 @@ func (kt *KustTarget) configureBuiltinNamespaceTransformer(
 		FieldSpecs       []config.FieldSpec
 	}
 	c.Namespace = kt.kustomization.Namespace
-	c.FieldSpecs = tConfig.NameSpace
+	c.FieldSpecs = tConfig.NameSpaceFieldSpecs()
 	p := builtin.NewNamespaceTransformerPlugin()
 	err = kt.configureBuiltinPlugin(p, c, "namespace")
 	if err != nil {
@@ -220,7 +220,7 @@ func (kt *KustTarget) configureBuiltinLabelTransformer(
 		FieldSpecs []config.FieldSpec
 	}
 	c.Labels = kt.kustomization.CommonLabels
-	c.FieldSpecs = tConfig.CommonLabels
+	c.FieldSpecs = tConfig.CommonLabelsFieldSpecs()
 	p := builtin.NewLabelTransformerPlugin()
 	err = kt.configureBuiltinPlugin(p, c, "label")
 	if err != nil {
@@ -238,7 +238,7 @@ func (kt *KustTarget) configureBuiltinAnnotationsTransformer(
 		FieldSpecs  []config.FieldSpec
 	}
 	c.Annotations = kt.kustomization.CommonAnnotations
-	c.FieldSpecs = tConfig.CommonAnnotations
+	c.FieldSpecs = tConfig.CommonAnnotationsFieldSpecs()
 	p := builtin.NewAnnotationsTransformerPlugin()
 	err = kt.configureBuiltinPlugin(p, c, "annotations")
 	if err != nil {
@@ -258,7 +258,7 @@ func (kt *KustTarget) configureBuiltinNameTransformer(
 	}
 	c.Prefix = kt.kustomization.NamePrefix
 	c.Suffix = kt.kustomization.NameSuffix
-	c.FieldSpecs = tConfig.NamePrefix
+	c.FieldSpecs = tConfig.NamePrefixFieldSpecs()
 	p := builtin.NewPrefixSuffixTransformerPlugin()
 	err = kt.configureBuiltinPlugin(p, c, "prefixsuffix")
 	if err != nil {
@@ -277,7 +277,7 @@ func (kt *KustTarget) configureBuiltinImageTagTransformer(
 	}
 	for _, args := range kt.kustomization.Images {
 		c.ImageTag = args
-		c.FieldSpecs = tConfig.Images
+		c.FieldSpecs = tConfig.ImagesFieldSpecs()
 		p := builtin.NewImageTagTransformerPlugin()
 		err = kt.configureBuiltinPlugin(p, c, "imageTag")
 		if err != nil {
@@ -297,7 +297,7 @@ func (kt *KustTarget) configureBuiltinReplicaCountTransformer(
 	}
 	for _, args := range kt.kustomization.Replicas {
 		c.Replica = args
-		c.FieldSpecs = tConfig.Replicas
+		c.FieldSpecs = tConfig.ReplicasFieldSpecs()
 		p := builtin.NewReplicaCountTransformerPlugin()
 		err = kt.configureBuiltinPlugin(p, c, "replica")
 		if err != nil {

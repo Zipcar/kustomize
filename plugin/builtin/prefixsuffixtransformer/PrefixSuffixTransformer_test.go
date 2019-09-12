@@ -27,6 +27,9 @@ prefix: baked-
 suffix: -pie
 fieldSpecs:
   - path: metadata/name
+  - path: metadata/name
+    kind: CustomResourceDefinition
+    skip: true
 `, `
 apiVersion: v1
 kind: Service
