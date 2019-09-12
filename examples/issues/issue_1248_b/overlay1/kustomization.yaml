@@ -9,3 +9,4 @@ configMapGenerator:
   - MY_ENV=bar
   name: example
   behavior: replace
+

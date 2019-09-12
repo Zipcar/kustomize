@@ -9,3 +9,4 @@ configMapGenerator:
   - MY_ENV=baz
   name: example
   behavior: replace
+

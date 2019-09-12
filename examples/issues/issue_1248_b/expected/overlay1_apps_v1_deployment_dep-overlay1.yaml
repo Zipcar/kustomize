@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dep
+  name: dep-overlay1
+  namespace: overlay1
 spec:
   template:
     spec:
       containers:
-      - name: dep
-        env:
+      - env:
         - name: SOME_ENV
-          value: $(MY_ENV)
-
+          value: bar
+        name: dep
