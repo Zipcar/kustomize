@@ -50,6 +50,20 @@ namePrefix:
 - path: metadata/name
   behavior: remove
 - path: metadata/name
+  kind: APIService
+  group: apiregistration.k8s.io
+  behavior: replace
+  skip: false
+- path: metadata/name
+  group: storage.k8s.io
+  kind: StorageClass
+  behavior: replace
+  skip: false
+  behavior: add
+- path: metadata/name
+  kind: Namespace
+  skip: true
+- path: metadata/name
   kind: MyCRD
   behavior: add
 `))
@@ -61,9 +75,30 @@ namePrefix:
 		NamePrefix: []FieldSpecConfig{
 			{
 				FieldSpec: FieldSpec{
+					Gvk:                gvk.Gvk{Kind: "Namespace"},
+					Path:               "metadata/name",
+					SkipTransformation: true,
+				},
+			},
+			{
+				FieldSpec: FieldSpec{
+					Gvk:                gvk.Gvk{Kind: "StorageClass", Group: "storage.k8s.io"},
+					Path:               "metadata/name",
+					SkipTransformation: false,
+				},
+			},
+			{
+				FieldSpec: FieldSpec{
 					Gvk:                gvk.Gvk{Kind: "CustomResourceDefinition"},
 					Path:               "metadata/name",
 					SkipTransformation: true,
+				},
+			},
+			{
+				FieldSpec: FieldSpec{
+					Gvk:                gvk.Gvk{Kind: "APIService", Group: "apiregistration.k8s.io"},
+					Path:               "metadata/name",
+					SkipTransformation: false,
 				},
 			},
 			{
