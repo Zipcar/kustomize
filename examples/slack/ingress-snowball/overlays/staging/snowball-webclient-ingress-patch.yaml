@@ -1,0 +1,9 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: snowball-webclient-ingress
+spec:
+  backend:
+    serviceName: snowball-webclient-service
+    servicePort: 80
+
