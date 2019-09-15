@@ -3,3 +3,5 @@ kind: ImageTagTransformer
 metadata:
   name: imagetagtransformer
 fieldSpecs:
+# The fields mutated by the ImageTagTransformer
+# are currently harcoded in the transformer.
