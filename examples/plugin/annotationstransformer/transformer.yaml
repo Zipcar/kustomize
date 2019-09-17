@@ -2,6 +2,9 @@ apiVersion: builtin
 kind: AnnotationsTransformer
 metadata:
   name: annotationstransformer
+annotations:
+  app: myApp
+  greeting/morning: a string with blanks
 fieldSpecs:
 - path: metadata/annotations
   create: true

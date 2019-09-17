@@ -35,7 +35,7 @@ spec:
           type: object
         spec:
           properties:
-            replica:
+            replicas:
               type: integer
             simpletext:
               type: string
@@ -54,14 +54,19 @@ metadata:
   name: cm1
 ---
 apiVersion: v1
+data:
+  COLOR: red
+  FRUIT: apple
+  SERVICE_PORT: "32"
+  VEGETABLE: carrot
 kind: ConfigMap
 metadata:
-  name: configmapgenerator-b6f2h9bdc8
+  name: configmapgenerator-kc588km8h4
 ---
 apiVersion: my.org/v1alpha1
 kind: MyCRD
 metadata:
   name: my-crd
 spec:
-  replica: 123
+  replicas: 123
   simpletext: some simple text

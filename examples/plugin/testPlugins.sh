@@ -1,25 +1,9 @@
 #!/bin/bash
-
-export BASEDIR=.
-
-set -e
-
-echo Testing built-in plugins...
-
-for i in `cat ${BASEDIR}/builtInPluginList | grep -v '#'`
+rm -fr /tmp/tmp.*
+rm -fr /tmp/kust*
+rm -fr /tmp/mdrip*
+for i in `cat readmelist | grep -v "^#"`
 do
- echo $i
- mkdir -p ${BASEDIR}/$i/expected
- kustomize build ${BASEDIR}/$i -o ${BASEDIR}/${i}/expected/result.yaml
+   echo "=========================" $i "====================="
+   mdrip --mode test $i
 done
-
-echo Testing external plugins...
-
-for i in `cat ${BASEDIR}/externalPluginList | grep -v '#'`
-do
- echo $i
- mkdir -p ${BASEDIR}/$i/expected
- kustomize build ${BASEDIR}/$i -o ${BASEDIR}/${i}/expected/result.yaml --enable_alpha_plugins
-done
-
-echo All done.

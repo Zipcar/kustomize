@@ -2,6 +2,11 @@ apiVersion: builtin
 kind: ImageTagTransformer
 metadata:
   name: imagetagtransformer
+imageTag:
+  name: nginx
+  newTag: v2
+# The following fields can be transformed
+# aside from the harcoded image field
+# in containers and initContainers
 fieldSpecs:
-# The fields mutated by the ImageTagTransformer
-# are currently harcoded in the transformer.
+- path: spec/simpletext

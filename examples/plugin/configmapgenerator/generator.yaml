@@ -2,4 +2,9 @@ apiVersion: builtin
 kind: ConfigMapGenerator
 metadata:
   name: configmapgenerator
-fieldSpecs:
+envs:
+- devops.env
+- uxteam.env
+literals:
+- FRUIT=apple
+- VEGETABLE=carrot

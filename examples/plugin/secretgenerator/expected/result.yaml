@@ -35,7 +35,7 @@ spec:
           type: object
         spec:
           properties:
-            replica:
+            replicas:
               type: integer
             simpletext:
               type: string
@@ -54,9 +54,15 @@ metadata:
   name: cm1
 ---
 apiVersion: v1
+data:
+  DB_PASSWORD: aWxvdmV5b3U=
+  FRUIT: YXBwbGU=
+  ROUTER_PASSWORD: YWRtaW4=
+  VEGETABLE: Y2Fycm90
+  obscure: TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsCmNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4K
 kind: Secret
 metadata:
-  name: secretgenerator-2hb4gk2t9f
+  name: secretgenerator-98285g2b47
 type: Opaque
 ---
 apiVersion: my.org/v1alpha1
@@ -64,5 +70,5 @@ kind: MyCRD
 metadata:
   name: my-crd
 spec:
-  replica: 123
+  replicas: 123
   simpletext: some simple text

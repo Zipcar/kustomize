@@ -35,7 +35,7 @@ spec:
           type: object
         spec:
           properties:
-            replica:
+            replicas:
               type: integer
             simpletext:
               type: string
@@ -58,6 +58,5 @@ kind: MyCRD
 metadata:
   name: my-crd
 spec:
-  replica: 123
-  replicas: 23
+  replicas: 64
   simpletext: some simple text

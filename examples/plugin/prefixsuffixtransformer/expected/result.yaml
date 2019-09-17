@@ -35,7 +35,7 @@ spec:
           type: object
         spec:
           properties:
-            replica:
+            replicas:
               type: integer
             simpletext:
               type: string
@@ -51,12 +51,12 @@ status:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cm1
+  name: tutorialpfx-cm1-tutorialsfx
 ---
 apiVersion: my.org/v1alpha1
 kind: MyCRD
 metadata:
   name: my-crd
 spec:
-  replica: 123
+  replicas: 123
   simpletext: some simple text

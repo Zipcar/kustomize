@@ -2,6 +2,8 @@ apiVersion: builtin
 kind: PrefixSuffixTransformer
 metadata:
   name: prefixsuffixtransformer
+prefix: tutorialpfx-
+suffix: -tutorialsfx
 fieldSpecs:
 - path: metadata/name
 - path: metadata/name
@@ -17,4 +19,7 @@ fieldSpecs:
 - path: metadata/name
   group: storage.k8s.io
   kind: StorageClass
+  skip: true
+- path: metadata/name
+  kind: MyCRD
   skip: true

@@ -2,6 +2,7 @@ apiVersion: builtin
 kind: NamespaceTransformer
 metadata:
   name: namespacetransformer
+  namespace: tutorial-ns
 fieldSpecs:
 # replace or add namespace field
 # on all entities by default
@@ -86,3 +87,9 @@ fieldSpecs:
 - path: metadata/namespace
   kind: VolumeAttachment
   skip: true
+
+# This a Cluster wide CRD
+- path: metadata/namespace
+  kind: MyCRD
+  skip: true
+

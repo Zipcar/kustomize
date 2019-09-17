@@ -2,6 +2,9 @@ apiVersion: builtin
 kind: LabelTransformer
 metadata:
   name: labeltransformer
+labels:
+  app: myApp
+  env: production
 fieldSpecs:
 - path: metadata/labels
   create: true
@@ -115,3 +118,7 @@ fieldSpecs:
   create: false
   group: networking.k8s.io
   kind: NetworkPolicy
+- path: metadata/labels
+  create: true
+  kind: MyCRD
+  skip: true

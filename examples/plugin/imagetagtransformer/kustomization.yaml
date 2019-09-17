@@ -2,3 +2,4 @@ resources:
 - resources.yaml
 transformers:
 - transformer.yaml
+- transformer2.yaml

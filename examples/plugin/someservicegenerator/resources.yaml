@@ -39,7 +39,7 @@ spec:
           properties:
             simpletext:
               type: string
-            replica:
+            replicas:
               type: integer
 status:
   acceptedNames:
@@ -54,7 +54,7 @@ metadata:
   name: my-crd
 spec:
   simpletext: some simple text
-  replica: 123
+  replicas: 123
 ---
 apiVersion: v1
 kind: ConfigMap

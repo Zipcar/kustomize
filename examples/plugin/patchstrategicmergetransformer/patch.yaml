@@ -3,5 +3,5 @@ kind: MyCRD
 metadata:
   name: my-crd
 spec:
-  replica: 3
+  replicas: 3
 

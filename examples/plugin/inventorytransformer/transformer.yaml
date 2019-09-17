@@ -2,4 +2,6 @@ apiVersion: builtin
 kind: InventoryTransformer
 metadata:
   name: inventorytransformer
-fieldSpecs:
+  namespace: default
+# policy: GarbageCollect
+policy: GarbageIgnore
