@@ -9,3 +9,6 @@ commonLabels:
 
 resources:
 - resource.yaml
+
+configurations:
+- ./kustomizeconfig/labels.yaml

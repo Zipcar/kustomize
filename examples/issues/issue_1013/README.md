@@ -16,7 +16,8 @@ DEMO_HOME=$(mktemp -d)
 
 <!-- @makeDirectories @test -->
 ```bash
-mkdir -p ${DEMO_HOME}
+mkdir -p ${DEMO_HOME}/
+mkdir -p ${DEMO_HOME}/kustomizeconfig
 ```
 
 ### Preparation Step KustomizationFile0
@@ -35,6 +36,9 @@ commonLabels:
 
 resources:
 - resource.yaml
+
+configurations:
+- ./kustomizeconfig/labels.yaml
 EOF
 ```
 
@@ -42,6 +46,21 @@ EOF
 ### Preparation Step Resource0
 
 <!-- @createResource0 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/kustomizeconfig/labels.yaml
+commonLabels:
+- path: spec/template/spec/affinity/podAntiAffinity/preferredDuringSchedulingIgnoredDuringExecution/podAffinityTerm/labelSelector/matchLabels
+  create: true
+  group: apps
+  kind: StatefulSet
+  behavior: replace
+EOF
+```
+
+
+### Preparation Step Resource1
+
+<!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/resource.yaml
 ---
@@ -68,7 +87,7 @@ spec:
           - weight: 100
             podAffinityTerm:
               labelSelector:
-                matchLabels:
+                # matchLabels:
                 matchExpressions:
                 - key: app.kubernetes.io/app
                   operator: In

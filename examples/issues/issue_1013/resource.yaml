@@ -22,7 +22,7 @@ spec:
           - weight: 100
             podAffinityTerm:
               labelSelector:
-                matchLabels:
+                # matchLabels:
                 matchExpressions:
                 - key: app.kubernetes.io/app
                   operator: In
