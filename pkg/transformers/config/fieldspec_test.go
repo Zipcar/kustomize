@@ -94,7 +94,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Group: "apple"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 			{
 				FieldSpec: FieldSpec{
@@ -102,7 +102,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Group: "pear"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 			{
 				FieldSpec: FieldSpec{
@@ -110,7 +110,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Group: "beans"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 		},
 	},
@@ -152,7 +152,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Group: "apple"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 			{
 				FieldSpec: FieldSpec{
@@ -160,7 +160,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Group: "pear"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 		},
 	},
@@ -234,7 +234,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Kind: "MyCRD"},
 					CreateIfNotPresent: false,
 				},
-				Behavior: "add",
+				Behavior: "",
 			},
 		},
 	},
@@ -279,6 +279,7 @@ var mergeTests = []struct {
 					Path:               "metadata/labels",
 					CreateIfNotPresent: true,
 				},
+				Behavior: "",
 			},
 			{
 				FieldSpec: FieldSpec{
@@ -286,6 +287,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Kind: "Deployment", Group: "apps"},
 					CreateIfNotPresent: false,
 				},
+				Behavior: "",
 			},
 		},
 	},
@@ -335,7 +337,7 @@ var mergeTests = []struct {
 					Gvk:                gvk.Gvk{Kind: "MyCRD"},
 					CreateIfNotPresent: true,
 				},
-				Behavior: "replace",
+				Behavior: "",
 			},
 		},
 	},
@@ -343,7 +345,14 @@ var mergeTests = []struct {
 
 func TestFsSlice_MergeAll(t *testing.T) {
 	for _, item := range mergeTests {
-		result, err := item.original.mergeAll(item.incoming)
+		result := fsSlice{}
+		var err error
+
+		// Normalize and merge original fsSlice
+		result, err = result.mergeAll(item.original)
+
+		// Normalize and merge incoming fsSlice
+		result, err = result.mergeAll(item.incoming)
 		if item.err == nil {
 			if err != nil {
 				t.Fatalf("test %s: unexpected err %v", item.name, err)

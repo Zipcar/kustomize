@@ -80,6 +80,8 @@ func NewFieldSpecMergeBehavior(s string) FieldSpecMergeBehavior {
 		return BehaviorRemove
 	case "add":
 		return BehaviorAdd
+	case "":
+		return BehaviorAdd
 	default:
 		return BehaviorUnspecified
 	}
@@ -105,6 +107,11 @@ const (
 func (fs FieldSpec) String() string {
 	return fmt.Sprintf(
 		"%s:%v:%v:%s", fs.Gvk.String(), fs.CreateIfNotPresent, fs.SkipTransformation, fs.Path)
+}
+
+func (fs FieldSpecConfig) String() string {
+	return fmt.Sprintf(
+		"%s:%v:%v:%s:%s", fs.Gvk.String(), fs.CreateIfNotPresent, fs.SkipTransformation, fs.Behavior, fs.Path)
 }
 
 // TODO(jeb): Method needs to be improve deal with multiple
@@ -176,8 +183,9 @@ func (s fsSlice) mergeAll(incoming fsSlice) (result fsSlice, err error) {
 func (s fsSlice) mergeOne(x FieldSpecConfig) (fsSlice, error) {
 	i := s.intersect(x)
 	behavior := NewFieldSpecMergeBehavior(x.Behavior)
+	x.Behavior = ""
 	switch behavior {
-	case BehaviorAdd, BehaviorUnspecified:
+	case BehaviorAdd:
 		if i > -1 {
 			// It's already there.
 			if (s[i].SkipTransformation == x.SkipTransformation) && (s[i].CreateIfNotPresent != x.CreateIfNotPresent) {
