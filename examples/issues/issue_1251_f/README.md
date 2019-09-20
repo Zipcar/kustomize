@@ -98,7 +98,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/projects/bar/manifests/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: bar
@@ -119,7 +119,7 @@ EOF
 <!-- @createResource2 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/projects/foo/manifests/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: foo
@@ -154,8 +154,8 @@ mkdir ${DEMO_HOME}/expected
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/bar_apps_v1_ingress_bar.yaml
-apiVersion: apps/v1
+cat <<'EOF' >${DEMO_HOME}/expected/bar_networking.k8s.io_v1beta1_ingress_bar.yaml
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: bar
@@ -193,8 +193,8 @@ EOF
 
 <!-- @createExpected2 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/foo_apps_v1_ingress_foo.yaml
-apiVersion: apps/v1
+cat <<'EOF' >${DEMO_HOME}/expected/foo_networking.k8s.io_v1beta1_ingress_foo.yaml
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: foo

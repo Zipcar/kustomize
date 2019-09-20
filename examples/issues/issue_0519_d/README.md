@@ -153,7 +153,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/composite/canary/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   labels:
@@ -186,7 +186,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/composite/production/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   labels:
@@ -483,8 +483,8 @@ EOF
 
 <!-- @createExpected4 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_apps_v1_ingress_kubeapp.yaml
-apiVersion: apps/v1
+cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_networking.k8s.io_v1beta1_ingress_kubeapp.yaml
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   labels:
@@ -670,8 +670,8 @@ EOF
 
 <!-- @createExpected10 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_apps_v1_ingress_kubeapp.yaml
-apiVersion: apps/v1
+cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_networking.k8s.io_v1beta1_ingress_kubeapp.yaml
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   labels:

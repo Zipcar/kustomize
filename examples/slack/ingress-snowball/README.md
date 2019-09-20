@@ -1,6 +1,5 @@
 # Feature Test for Issue ingress-snowball
 
-
 ## Setup the workspace
 
 First, define a place to work:
@@ -167,7 +166,7 @@ EOF
 <!-- @createResource3 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/snowball-webclient-ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -242,7 +241,7 @@ EOF
 <!-- @createResource7 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/production/snowball-webclient-ingress-patch.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -277,7 +276,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/staging/snowball-webclient-ingress-patch.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -286,6 +285,22 @@ spec:
     serviceName: snowball-webclient-service
     servicePort: 80
 
+EOF
+```
+
+
+### Preparation Step Other0
+
+<!-- @createOther0 @test -->
+```bash
+cat <<'EOF' >${DEMO_HOME}/foo
+./expected/staging.yaml
+./expected/production.yaml
+./README.md
+./overlays/production/snowball-webclient-ingress-patch.yaml
+./overlays/staging/snowball-webclient-ingress-patch.yaml
+./base/snowball-webclient-deployment.yaml
+./base/snowball-webclient-ingress.yaml
 EOF
 ```
 
@@ -357,7 +372,15 @@ spec:
         - containerPort: 3000
           protocol: TCP
 ---
-apiVersion: apps/v1
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: production-snowball-webclient-certificate
+spec:
+  domains:
+  - public.prolificparc.com
+---
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -370,14 +393,6 @@ spec:
   backend:
     serviceName: production-snowball-webclient-service
     servicePort: 80
----
-apiVersion: networking.gke.io/v1beta1
-kind: ManagedCertificate
-metadata:
-  name: production-snowball-webclient-certificate
-spec:
-  domains:
-  - public.prolificparc.com
 ---
 kind: GKEGlobalStaticIP
 metadata:
@@ -437,7 +452,15 @@ spec:
         - containerPort: 3000
           protocol: TCP
 ---
-apiVersion: apps/v1
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: staging-snowball-webclient-certificate
+spec:
+  domains:
+  - abc.prolificparc.com
+---
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -450,14 +473,6 @@ spec:
   backend:
     serviceName: staging-snowball-webclient-service
     servicePort: 80
----
-apiVersion: networking.gke.io/v1beta1
-kind: ManagedCertificate
-metadata:
-  name: staging-snowball-webclient-certificate
-spec:
-  domains:
-  - abc.prolificparc.com
 ---
 kind: GKEGlobalStaticIP
 metadata:

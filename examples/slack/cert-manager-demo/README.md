@@ -213,7 +213,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
@@ -328,7 +328,7 @@ EOF
 <!-- @createResource6 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/cert-manager/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
@@ -395,7 +395,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/development/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
@@ -501,7 +501,7 @@ EOF
 <!-- @createResource14 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/production/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
@@ -565,7 +565,7 @@ EOF
 <!-- @createResource17 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/staging/ingress.yaml
-apiVersion: apps/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress
@@ -602,21 +602,6 @@ EOF
 
 <!-- @createOther0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/foo
-./overlays/cert-manager/kustomization.yaml
-./overlays/development/kustomization.yaml
-./overlays/multi-environment/kustomization.yaml
-./overlays/production/kustomization.yaml
-./overlays/staging/kustomization.yaml
-./base/kustomization.yaml
-EOF
-```
-
-
-### Preparation Step Other1
-
-<!-- @createOther1 @test -->
-```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/staging/secret/tls.crt
 -----BEGIN CERTIFICATE-----
 MIIC/zCCAeegAwIBAgIJAJxgKkyFg6K6MA0GCSqGSIb3DQEBCwUAMBYxFDASBgNV
@@ -641,9 +626,9 @@ EOF
 ```
 
 
-### Preparation Step Other2
+### Preparation Step Other1
 
-<!-- @createOther2 @test -->
+<!-- @createOther1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/staging/secret/tls.key
 -----BEGIN RSA PRIVATE KEY-----
@@ -695,6 +680,7 @@ kustomize build ${DEMO_HOME}/overlays/staging -o ${DEMO_HOME}/actual/staging.yam
 mkdir ${DEMO_HOME}/expected
 ```
 
+
 ### Verification Step Expected0
 
 <!-- @createExpected0 @test -->
@@ -745,28 +731,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb
-  name: ingress
-  namespace: helloweb
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - demo.example.net
-    secretName: secret-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -804,6 +768,28 @@ spec:
     privateKeySecretRef:
       name: issuer-letsencrypt-account-key-secret
     server: https://acme-staging-v02.api.letsencrypt.org/directory
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb
+  name: ingress
+  namespace: helloweb
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - demo.example.net
+    secretName: secret-demo
 EOF
 ```
 
@@ -858,28 +844,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-development
-  name: ingress-development
-  namespace: helloweb-development
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-development
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - development.demo.example.net
-    secretName: secret-development-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -932,6 +896,28 @@ metadata:
   namespace: helloweb-development
 spec:
   selfSigned: {}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-development
+  name: ingress-development
+  namespace: helloweb-development
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-development
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - development.demo.example.net
+    secretName: secret-development-demo
 EOF
 ```
 
@@ -1088,72 +1074,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-development
-  name: ingress-development
-  namespace: helloweb-development
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-development
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - development.demo.example.net
-    secretName: secret-development-demo
----
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-production
-  name: ingress-production
-  namespace: helloweb-production
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-production
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - www.demo.example.net
-    secretName: secret-www-demo
----
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-staging
-  name: ingress-staging
-  namespace: helloweb-staging
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-staging
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - staging.demo.example.net
-    secretName: secret-staging-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -1272,6 +1192,72 @@ metadata:
 spec:
   ca:
     secretName: ca-secret-staging-tbd8c845kt
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-development
+  name: ingress-development
+  namespace: helloweb-development
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-development
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - development.demo.example.net
+    secretName: secret-development-demo
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-production
+  name: ingress-production
+  namespace: helloweb-production
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-production
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - www.demo.example.net
+    secretName: secret-www-demo
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-staging
+  name: ingress-staging
+  namespace: helloweb-staging
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-staging
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - staging.demo.example.net
+    secretName: secret-staging-demo
 EOF
 ```
 
@@ -1326,28 +1312,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-production
-  name: ingress-production
-  namespace: helloweb-production
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-production
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - www.demo.example.net
-    secretName: secret-www-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -1385,6 +1349,28 @@ spec:
     privateKeySecretRef:
       name: issuer-letsencrypt-account-key-secret-production
     server: https://acme-v02.api.letsencrypt.org/directory
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-production
+  name: ingress-production
+  namespace: helloweb-production
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-production
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - www.demo.example.net
+    secretName: secret-www-demo
 EOF
 ```
 
@@ -1451,28 +1437,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-staging
-  name: ingress-staging
-  namespace: helloweb-staging
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-staging
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - staging.demo.example.net
-    secretName: secret-staging-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -1500,6 +1464,28 @@ metadata:
 spec:
   ca:
     secretName: ca-secret-staging-tbd8c845kt
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-staging
+  name: ingress-staging
+  namespace: helloweb-staging
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-staging
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - staging.demo.example.net
+    secretName: secret-staging-demo
 EOF
 ```
 
@@ -1510,5 +1496,4 @@ test 0 == \
 $(diff -r $DEMO_HOME/actual $DEMO_HOME/expected | wc -l); \
 echo $?
 ```
-
 

@@ -55,28 +55,6 @@ spec:
         ports:
         - containerPort: 8080
 ---
-apiVersion: apps/v1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-staging
-  name: ingress-staging
-  namespace: helloweb-staging
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-staging
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - staging.demo.example.net
-    secretName: secret-staging-demo
----
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -104,3 +82,25 @@ metadata:
 spec:
   ca:
     secretName: ca-secret-staging-tbd8c845kt
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-staging
+  name: ingress-staging
+  namespace: helloweb-staging
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-staging
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - staging.demo.example.net
+    secretName: secret-staging-demo
