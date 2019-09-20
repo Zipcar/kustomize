@@ -42,7 +42,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/app/ingress.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: web-private
@@ -92,8 +92,8 @@ mkdir ${DEMO_HOME}/expected
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/extensions_v1beta1_ingress_web-private-dev.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/apps_v1_ingress_web-private-dev.yaml
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: web-private-dev

@@ -195,7 +195,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/diamond/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -214,7 +214,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/diamond-with-patches/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -233,7 +233,7 @@ EOF
 <!-- @createResource2 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/diamond-with-patches/overlays/overlay1/patches/patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -248,7 +248,7 @@ EOF
 <!-- @createResource3 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/diamond-with-patches/overlays/overlay2/patches/patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -266,7 +266,7 @@ EOF
 <!-- @createResource4 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/mixin/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -285,7 +285,7 @@ EOF
 <!-- @createResource5 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/mixin/overlays/overlay1/patches/patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -300,7 +300,7 @@ EOF
 <!-- @createResource6 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/mixin/overlays/overlay2/patches/patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -334,8 +334,8 @@ mkdir -p ${DEMO_HOME}/expected/diamond
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/diamond/extensions_v1beta1_deployment_my-deployment.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/diamond/apps_v1_deployment_my-deployment.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment

@@ -52,7 +52,7 @@ metadata:
     app: kubeapp
   name: kubeapp-ns
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -103,7 +103,7 @@ spec:
     app: kubeapp
   type: LoadBalancer
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:

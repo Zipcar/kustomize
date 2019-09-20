@@ -26,7 +26,7 @@ spec:
     app: kubeapp2
   type: LoadBalancer
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prod-kubeapp1
@@ -54,7 +54,7 @@ spec:
             path: /readiness
             port: 8081
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prod-kubeapp2

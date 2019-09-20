@@ -35,7 +35,7 @@ configurations:
 vars:
   - name: CNAME
     objref:
-      apiVersion: extensions/v1beta1
+      apiVersion: apps/v1
       kind: Ingress
       name: my-ingress
     fieldref:
@@ -77,7 +77,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/ingress.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: my-ingress
@@ -132,8 +132,8 @@ mkdir ${DEMO_HOME}/expected
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/extensions_v1beta1_ingress_my-ingress.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/apps_v1_ingress_my-ingress.yaml
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: my-ingress

@@ -54,7 +54,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/resources.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: filebeat
@@ -131,8 +131,8 @@ mkdir ${DEMO_HOME}/expected
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/extensions_v1beta1_daemonset_filebeat.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/apps_v1_daemonset_filebeat.yaml
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:

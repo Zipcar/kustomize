@@ -9,7 +9,7 @@ configurations:
 vars:
   - name: CNAME
     objref:
-      apiVersion: extensions/v1beta1
+      apiVersion: apps/v1
       kind: Ingress
       name: my-ingress
     fieldref:

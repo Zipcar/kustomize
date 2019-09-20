@@ -7,6 +7,6 @@ resources:
 #   objref:
 #     kind: Deployment
 #     name: probe
-#     apiVersion: extensions/v1beta1
+#     apiVersion: apps/v1
 #   fieldref:
 #     fieldpath: spec.template.spec.containers[0].livenessProbe

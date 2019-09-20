@@ -164,7 +164,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/backend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-backend
@@ -184,7 +184,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/frontend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-frontend
@@ -204,7 +204,7 @@ EOF
 <!-- @createResource2 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/development/backend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-backend
@@ -224,7 +224,7 @@ EOF
 <!-- @createResource3 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/development/frontend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-frontend
@@ -244,7 +244,7 @@ EOF
 <!-- @createResource4 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/production/backend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-backend
@@ -264,7 +264,7 @@ EOF
 <!-- @createResource5 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/production/frontend/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-frontend
@@ -303,8 +303,8 @@ mkdir -p ${DEMO_HOME}/expected/production
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/development/extensions_v1beta1_deployment_my-backend.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/development/apps_v1_deployment_my-backend.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -331,8 +331,8 @@ EOF
 
 <!-- @createExpected1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/development/extensions_v1beta1_deployment_my-frontend.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/development/apps_v1_deployment_my-frontend.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -359,8 +359,8 @@ EOF
 
 <!-- @createExpected2 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/production/extensions_v1beta1_deployment_my-backend.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/production/apps_v1_deployment_my-backend.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -387,8 +387,8 @@ EOF
 
 <!-- @createExpected3 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/production/extensions_v1beta1_deployment_my-frontend.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/production/apps_v1_deployment_my-frontend.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

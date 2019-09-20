@@ -98,7 +98,7 @@ spec:
     org: kubernetes
     repo: test-infra
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:

@@ -308,11 +308,11 @@ generatorOptions:
 patchesJson6902:
 - path: deployment_patch.yaml
   target:
-    group: extensions
+    group: apps
     kind: Deployment
     name: $(svcName)
     namespace: kubeflow
-    version: v1beta1
+    version: v1
 
 resources:
 - ../base
@@ -359,11 +359,11 @@ configurations:
 patchesJson6902:
 - path: deployment_patch.yaml
   target:
-    group: extensions
+    group: apps
     kind: Deployment
     name: $(svcName)
     namespace: kubeflow
-    version: v1beta1
+    version: v1
 
 resources:
 - ../base
@@ -1017,7 +1017,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/serving/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -2087,8 +2087,8 @@ EOF
 
 <!-- @createExpected9 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/serving/GCS/kubeflow_extensions_v1beta1_deployment_mnist-gcs-dist.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/serving/GCS/kubeflow_apps_v1_deployment_mnist-gcs-dist.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -2241,8 +2241,8 @@ EOF
 
 <!-- @createExpected13 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/serving/local/kubeflow_extensions_v1beta1_deployment_mnist-service-local.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/serving/local/kubeflow_apps_v1_deployment_mnist-service-local.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

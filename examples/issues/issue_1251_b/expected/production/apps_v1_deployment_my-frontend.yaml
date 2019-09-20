@@ -1,9 +1,9 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     env: production
-  name: my-backend
+  name: my-frontend
 spec:
   replicas: 3
   selector:
@@ -15,5 +15,5 @@ spec:
         env: production
     spec:
       containers:
-      - image: my-backend-image
-        name: my-backend
+      - image: my-frontend-image
+        name: my-frontend

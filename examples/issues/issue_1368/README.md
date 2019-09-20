@@ -49,7 +49,7 @@ EOF
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/deployment.yaml
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: kubeapp
 spec:
@@ -85,7 +85,7 @@ EOF
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/ingress.yaml
 kind: Ingress
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: kubeapp
 spec:
@@ -307,7 +307,7 @@ metadata:
     app: kubeapp
   name: kubeapp-ns
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -358,7 +358,7 @@ spec:
     app: kubeapp
   type: LoadBalancer
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
@@ -400,7 +400,7 @@ spec:
   replica: 123
   simpletext: some simple text
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
@@ -429,7 +429,7 @@ spec:
     app: kubeapp
   type: LoadBalancer
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:

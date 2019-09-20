@@ -167,7 +167,7 @@ EOF
 <!-- @createResource3 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/snowball-webclient-ingress.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -242,7 +242,7 @@ EOF
 <!-- @createResource7 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/production/snowball-webclient-ingress-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -277,7 +277,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/overlays/staging/snowball-webclient-ingress-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: snowball-webclient-ingress
@@ -357,7 +357,7 @@ spec:
         - containerPort: 3000
           protocol: TCP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   annotations:
@@ -437,7 +437,7 @@ spec:
         - containerPort: 3000
           protocol: TCP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   annotations:

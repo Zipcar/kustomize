@@ -139,7 +139,7 @@ resources:
 #   objref:
 #     kind: Deployment
 #     name: dns
-#     apiVersion: extensions/v1beta1
+#     apiVersion: apps/v1
 #   fieldref:
 #     fieldpath: spec.template.spec.dnsPolicy
 EOF
@@ -160,7 +160,7 @@ resources:
 #   objref:
 #     kind: Deployment
 #     name: probe
-#     apiVersion: extensions/v1beta1
+#     apiVersion: apps/v1
 #   fieldref:
 #     fieldpath: spec.template.spec.containers[0].livenessProbe
 EOF
@@ -181,7 +181,7 @@ resources:
 #   objref:
 #     kind: Deployment
 #     name: restart
-#     apiVersion: extensions/v1beta1
+#     apiVersion: apps/v1
 #   fieldref:
 #     fieldpath: spec.template.spec.restartPolicy
 EOF
@@ -209,7 +209,7 @@ EOF
 <!-- @createResource0 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/inheritance/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -228,7 +228,7 @@ EOF
 <!-- @createResource1 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/inheritance/dns/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -254,7 +254,7 @@ EOF
 <!-- @createResource3 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/inheritance/probe/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -285,7 +285,7 @@ EOF
 <!-- @createResource5 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/inheritance/restart/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -302,7 +302,7 @@ EOF
 <!-- @createResource6 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/references/base/deployment.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -324,7 +324,7 @@ EOF
 <!-- @createResource7 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/references/dns/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dns
@@ -342,7 +342,7 @@ EOF
 <!-- @createResource8 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/references/probe/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: probe
@@ -364,7 +364,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/references/restart/dep-patch.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restart
@@ -401,8 +401,8 @@ mkdir -p ${DEMO_HOME}/expected/references
 
 <!-- @createExpected0 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/inheritance/extensions_v1beta1_deployment_my-deployment.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/inheritance/apps_v1_deployment_my-deployment.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -426,8 +426,8 @@ EOF
 
 <!-- @createExpected1 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/references/default_extensions_v1beta1_deployment_my-deployment.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/references/default_apps_v1_deployment_my-deployment.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -451,8 +451,8 @@ EOF
 
 <!-- @createExpected2 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/references/patch_extensions_v1beta1_deployment_dns.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/references/patch_apps_v1_deployment_dns.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dns
@@ -469,8 +469,8 @@ EOF
 
 <!-- @createExpected3 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/references/patch_extensions_v1beta1_deployment_probe.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/references/patch_apps_v1_deployment_probe.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: probe
@@ -491,8 +491,8 @@ EOF
 
 <!-- @createExpected4 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/references/patch_extensions_v1beta1_deployment_restart.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/references/patch_apps_v1_deployment_restart.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restart

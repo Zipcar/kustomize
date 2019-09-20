@@ -145,6 +145,72 @@ spec:
         ports:
         - containerPort: 8080
 ---
+apiVersion: apps/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-development
+  name: ingress-development
+  namespace: helloweb-development
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-development
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - development.demo.example.net
+    secretName: secret-development-demo
+---
+apiVersion: apps/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-production
+  name: ingress-production
+  namespace: helloweb-production
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-production
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - www.demo.example.net
+    secretName: secret-www-demo
+---
+apiVersion: apps/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: web-static-ip
+  labels:
+    app: helloweb-staging
+  name: ingress-staging
+  namespace: helloweb-staging
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: helloweb-service-staging
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - staging.demo.example.net
+    secretName: secret-staging-demo
+---
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
@@ -263,69 +329,3 @@ metadata:
 spec:
   ca:
     secretName: ca-secret-staging-tbd8c845kt
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-development
-  name: ingress-development
-  namespace: helloweb-development
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-development
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - development.demo.example.net
-    secretName: secret-development-demo
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-production
-  name: ingress-production
-  namespace: helloweb-production
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-production
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - www.demo.example.net
-    secretName: secret-www-demo
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: web-static-ip
-  labels:
-    app: helloweb-staging
-  name: ingress-staging
-  namespace: helloweb-staging
-spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: helloweb-service-staging
-          servicePort: 8080
-        path: /
-  tls:
-  - hosts:
-    - staging.demo.example.net
-    secretName: secret-staging-demo

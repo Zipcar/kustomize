@@ -115,7 +115,7 @@ EOF
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/deployment.yaml
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: kubeapp
 spec:
@@ -151,7 +151,7 @@ EOF
 ```bash
 cat <<'EOF' >${DEMO_HOME}/base/ingress.yaml
 kind: Ingress
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: kubeapp
 spec:
@@ -184,16 +184,16 @@ EOF
 cat <<'EOF' >${DEMO_HOME}/base/kustomizeconfig/ingress.yaml
 namePrefix:
 - path: metadata/name
-  group: extensions
-  version: v1beta1
+  group: apps
+  version: v1
   kind: Ingress
   skip: true
 
 # Not implemented yet
 commonLabels:
 - path: metadata/labels
-  group: extensions
-  version: v1beta1
+  group: apps
+  version: v1
   kind: Ingress
   skip: true
 EOF
@@ -352,7 +352,7 @@ EOF
 <!-- @createResource9 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/canary/ingress.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
@@ -385,7 +385,7 @@ EOF
 <!-- @createResource10 @test -->
 ```bash
 cat <<'EOF' >${DEMO_HOME}/production/ingress.yaml
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
@@ -501,8 +501,8 @@ EOF
 
 <!-- @createExpected3 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_extensions_v1beta1_deployment_kubeapp-canary.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_apps_v1_deployment_kubeapp-canary.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -546,8 +546,8 @@ EOF
 
 <!-- @createExpected4 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_extensions_v1beta1_ingress_kubeapp.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/canary/kubeapp-ns_apps_v1_ingress_kubeapp.yaml
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
@@ -688,8 +688,8 @@ EOF
 
 <!-- @createExpected9 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_extensions_v1beta1_deployment_kubeapp-production.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_apps_v1_deployment_kubeapp-production.yaml
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -733,8 +733,8 @@ EOF
 
 <!-- @createExpected10 @test -->
 ```bash
-cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_extensions_v1beta1_ingress_kubeapp.yaml
-apiVersion: extensions/v1beta1
+cat <<'EOF' >${DEMO_HOME}/expected/production/kubeapp-ns_apps_v1_ingress_kubeapp.yaml
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   labels:
