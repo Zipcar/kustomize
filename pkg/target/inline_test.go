@@ -226,7 +226,7 @@ vars:
   objref:
     kind: Deployment
     name: probe
-    apiVersion: extensions/v1beta1
+    apiVersion: apps/v1
   fieldref:
     fieldpath: spec.template.spec.containers[0].livenessProbe
 `)
@@ -251,7 +251,7 @@ vars:
   objref:
     kind: Deployment
     name: dns
-    apiVersion: extensions/v1beta1
+    apiVersion: apps/v1
   fieldref:
     fieldpath: spec.template.spec.dnsPolicy
 `)
@@ -276,7 +276,7 @@ vars:
   objref:
     kind: Deployment
     name: restart
-    apiVersion: extensions/v1beta1
+    apiVersion: apps/v1
   fieldref:
     fieldpath: spec.template.spec.restartPolicy
 `)
@@ -294,7 +294,7 @@ varReference:
 }
 func (ut *inlineCompositionTest) writeProbePatch(th *kusttest_test.KustTestHarness) {
 	th.WriteF("/inlinecomposition/probe/dep-patch.yaml", `
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: probe
@@ -311,7 +311,7 @@ spec:
 }
 func (ut *inlineCompositionTest) writeDnsPatch(th *kusttest_test.KustTestHarness) {
 	th.WriteF("/inlinecomposition/dns/dep-patch.yaml", `
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dns
@@ -324,7 +324,7 @@ spec:
 }
 func (ut *inlineCompositionTest) writeBaseDeployment(th *kusttest_test.KustTestHarness) {
 	th.WriteF("/inlinecomposition/base/deployment.yaml", `
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -341,7 +341,7 @@ spec:
 }
 func (ut *inlineCompositionTest) writeRestartPatch(th *kusttest_test.KustTestHarness) {
 	th.WriteF("/inlinecomposition/restart/dep-patch.yaml", `
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restart
@@ -370,7 +370,7 @@ func TestInlineComposition(t *testing.T) {
 		t.Fatalf("Err: %v", err)
 	}
 	th.AssertActualEqualsExpected(m, `
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
@@ -387,7 +387,7 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: probe
@@ -401,7 +401,7 @@ spec:
             path: /healthz
             port: 8080
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dns
@@ -411,7 +411,7 @@ spec:
     spec:
       dnsPolicy: ClusterFirst
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restart
