@@ -24,7 +24,7 @@ import (
 )
 
 type RefVarTransformer struct {
-	varMap            map[string]interface{}
+	varMap            resmap.VarMap
 	replacementCounts map[string]int
 	fieldSpecs        []config.FieldSpec
 	mappingFunc       func(string) interface{}
@@ -36,7 +36,7 @@ const parentInline = "parent-inline"
 // that replaces $(VAR) style variables with values.
 // The fieldSpecs are the places to look for occurrences of $(VAR).
 func NewRefVarTransformer(
-	varMap map[string]interface{}, fs []config.FieldSpec) *RefVarTransformer {
+	varMap resmap.VarMap, fs []config.FieldSpec) *RefVarTransformer {
 	return &RefVarTransformer{
 		varMap:     varMap,
 		fieldSpecs: fs,
@@ -143,7 +143,7 @@ func (rv *RefVarTransformer) replaceVars(in interface{}) (interface{}, error) {
 // after a Transform run.
 func (rv *RefVarTransformer) UnusedVars() []string {
 	var unused []string
-	for k := range rv.varMap {
+	for _, k := range rv.varMap.VarNames() {
 		_, ok := rv.replacementCounts[k]
 		if !ok {
 			unused = append(unused, k)
@@ -155,14 +155,18 @@ func (rv *RefVarTransformer) UnusedVars() []string {
 // Transform replaces $(VAR) style variables with values.
 func (rv *RefVarTransformer) Transform(m resmap.ResMap) error {
 	rv.replacementCounts = make(map[string]int)
-	rv.mappingFunc = expansion.MappingFuncFor(
-		rv.replacementCounts, rv.varMap)
 
 	// Then replace the variables. The first pass may inline
 	// complex subtree, when the second can replace variables
 	// reference inlined during the first pass
 	for i := 0; i < 2; i++ {
 		for _, res := range m.Resources() {
+			varSubset, err := rv.varMap.SubsetThatCouldBeReferencedByResource(res)
+			if err != nil {
+				return err
+			}
+			rv.mappingFunc = expansion.MappingFuncFor(
+				rv.replacementCounts, varSubset)
 			for _, fieldSpec := range rv.fieldSpecs {
 				if res.OrgId().IsSelected(&fieldSpec.Gvk) {
 					if err := MutateField(
